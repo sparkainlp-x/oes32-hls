@@ -35,8 +35,8 @@ def _make_proposal(rng: random.Random, sector: Sector, tau: float, noise_scale: 
             prop[k * 4 + 1] = -noise_scale
     elif sector == Sector.FOLD8 and x < 0.30:
         prop = [0.0] * WIDTH
-        for ring_idx in (0, 4, 8, 12, 16, 20, 24, 28):
-            prop[ring_idx] = tau / 4.0
+        for elem_idx in (0, 4, 8, 12, 16, 20, 24, 28):
+            prop[elem_idx] = tau / 4.0
     else:
         prop = [rng.gauss(0.0, noise_scale) for _ in range(WIDTH)]
 
@@ -60,6 +60,7 @@ def run_sector_stress_test(
 
     stats = {
         "sector": sector.value,
+        "tau": tau,
         "iterations": iterations,
         "admitted": 0,
         "rejected_residual": 0,
@@ -130,7 +131,7 @@ def main() -> None:
         admit_rate = (res["admitted"] / res["iterations"]) * 100.0
 
         print(f"    - Admitted Updates      : {res['admitted']} ({admit_rate:.2f}%)")
-        print(f"    - Residual Breaches (tau = 0.08): {res['rejected_residual']}")
+        print(f"    - Residual Breaches (tau = {res['tau']:.2f}): {res['rejected_residual']}")
         print(f"    - Symmetry Rejections   : {res['rejected_symmetry']}")
         print(f"    - Circuit Breaker Trips : {res['latched_count']}")
         print(f"    - Execution Latency p50 : {median(lat_us):.3f} us")
