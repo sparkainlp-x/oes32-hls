@@ -16,6 +16,8 @@ Hardware-accelerated telemetry triage for the **OES-32 Membrane Shield** — tra
 | `oes32_hls_top.h` | Shared header — array size constant and function prototype |
 | `oes32_hls_top.cpp` | Vitis HLS accelerator source — coherence, symmetry, FOLD8 checks |
 | `test_oes32_hls.cpp` | C++ testbench — 6 test cases, compiles with `g++`, no Vitis required |
+| `oes32_membrane_shield.py` | Python compatibility model — sector-gated membrane shield logic |
+| `test_oes32_monte_carlo.py` | Python stochastic stress test — validates ANY/EVEN/ODD/FOLD8 behavior |
 | `run_hls.tcl` | Vitis HLS automation script — project creation, synthesis, IP export |
 | `.github/workflows/vitis-hls.yml` | GitHub Actions CI — file verification + testbench compilation |
 
@@ -67,6 +69,7 @@ git clone https://github.com/sparkainlp-x/oes32-hls.git
 cd oes32-hls
 g++ -std=c++14 -o test_oes32_hls test_oes32_hls.cpp oes32_hls_top.cpp
 ./test_oes32_hls
+python3 test_oes32_monte_carlo.py
 ```
 
 Expected output:
@@ -91,7 +94,8 @@ The GitHub Actions workflow (`.github/workflows/vitis-hls.yml`) runs on every pu
 
 1. **Verify HLS Files** — confirms `oes32_hls_top.cpp` and `run_hls.tcl` are present.
 2. **Compile & Run Testbench** — builds `test_oes32_hls.cpp` with `g++` and executes it; the job fails if any test case fails.
-3. **Synthesis stage** — echoes the synthesis command (full Vitis HLS synthesis requires an AMD Vitis Docker image; see the workflow file for instructions to enable it).
+3. **Run Python Monte Carlo stress** — executes `test_oes32_monte_carlo.py` to stochastically validate sector gates (`ANY`, `EVEN`, `ODD`, `FOLD8`).
+4. **Synthesis stage** — echoes the synthesis command (full Vitis HLS synthesis requires an AMD Vitis Docker image; see the workflow file for instructions to enable it).
 
 ---
 

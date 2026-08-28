@@ -29,6 +29,9 @@ jobs:
       - name: Run Testbench
         run: ./test_oes32_hls
 
+      - name: Run Python Monte Carlo Stress Test
+        run: python3 test_oes32_monte_carlo.py
+
   # ------------------------------------------------------------------
   # Job 2: Verify HLS source and script files are present, then
   # confirm the synthesis command.  Full synthesis requires an AMD
