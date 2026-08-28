@@ -7,9 +7,40 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # ------------------------------------------------------------------
+  # Job 1: Compile the C++ testbench with g++ and run all test cases.
+  # No Xilinx tools are required for this job.
+  # ------------------------------------------------------------------
+  testbench:
+    name: Build & Run C++ Testbench
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Compile Testbench
+        run: |
+          g++ -std=c++14 -Wall -Wextra -Wno-unknown-pragmas \
+              -o test_oes32_hls \
+              test_oes32_hls.cpp oes32_hls_top.cpp
+
+      - name: Run Testbench
+        run: ./test_oes32_hls
+
+  # ------------------------------------------------------------------
+  # Job 2: Verify HLS source and script files are present, then
+  # confirm the synthesis command.  Full synthesis requires an AMD
+  # Vitis HLS Docker image; uncomment the vitis_hls line and update
+  # `runs-on` to a self-hosted runner with Vitis installed to enable.
+  # ------------------------------------------------------------------
   hls-synthesis:
     name: Synthesize OES-32 HLS Accelerator
     runs-on: ubuntu-latest
+    needs: testbench
+    permissions:
+      contents: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -17,13 +48,13 @@ jobs:
       - name: Verify HLS Files
         run: |
           echo "Checking OES-32 HLS source and automation scripts..."
-          ls -la oes32_hls_top.cpp run_hls.tcl
+          ls -la oes32_hls_top.h oes32_hls_top.cpp run_hls.tcl
 
       - name: Execute Vitis HLS Pipeline
-        # Note: To run actual hardware compilation in CI, map this job 
-        # to an AMD Xilinx Vitis Docker container image (e.g., xilinx/vitis).
+        # To enable full hardware synthesis, use an AMD Vitis Docker
+        # container (e.g., xilinx/vitis) and uncomment the line below.
         run: |
-          echo "Initializing automated Tcl build execution..."
           echo "Target Architecture: AMD Xilinx Zynq UltraScale+ RFSoC (ZCU111)"
+          echo "Synthesis command: vitis_hls -f run_hls.tcl"
           # vitis_hls -f run_hls.tcl
           echo "Pipeline configuration verified successfully."
