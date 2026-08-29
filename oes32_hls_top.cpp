@@ -33,7 +33,7 @@ static const int FOLD8_RINGS[FOLD8_RING_COUNT][FOLD8_RING_SIZE] = {
 // Aliased locally for readability inside this translation unit.
 static constexpr float TAU = COHERENCE_TAU;
 
-static float compute_max_residual(
+static float compute_max_squared_residual(
     const float proposed[N],
     const float reference[N])
 {
@@ -45,9 +45,9 @@ COHERENCE_LOOP:
     for (int i = 0; i < N; i++) {
 #pragma HLS PIPELINE II=1
         float diff = proposed[i] - reference[i];
-        float sq   = diff * diff;
-        if (sq > max_residual) {
-            max_residual = sq;
+        float sq_residual = diff * diff;
+        if (sq_residual > max_residual) {
+            max_residual = sq_residual;
         }
     }
     return max_residual;
@@ -61,7 +61,7 @@ static float compute_even_odd_symmetry_diff(const float proposed[N]) {
 SYMMETRY_EVEN_ODD_LOOP:
 #endif
     for (int i = 0; i < N; i += 2) {
-#pragma HLS PIPELINE II=1
+#pragma HLS PIPELINE
         sum_even += proposed[i];
         sum_odd  += proposed[i + 1];
     }
@@ -122,7 +122,7 @@ void oes32_membrane_accelerator(
     // ----------------------------------------------------------------
     // 1. Coherence floor — compute max |proposed[i] - reference[i]|^2
     // ----------------------------------------------------------------
-    float max_residual = compute_max_residual(proposed, reference);
+    float max_residual = compute_max_squared_residual(proposed, reference);
     *pass_coherence = (max_residual < TAU) ? 1 : 0;
 
     // ----------------------------------------------------------------
