@@ -8,6 +8,8 @@
 
 // Array size constant
 static constexpr int N = 32;
+static constexpr int FOLD8_RING_COUNT = 4;
+static constexpr int FOLD8_RING_SIZE  = 8;
 
 // Coherence tolerance (must match oes32_hls_top.cpp)
 static constexpr float COHERENCE_TAU = 0.09f;

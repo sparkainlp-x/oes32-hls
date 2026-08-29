@@ -14,7 +14,7 @@ Hardware-accelerated telemetry triage for the **OES-32 Membrane Shield** — tra
 | File | Purpose |
 |------|---------|
 | `oes32_hls_top.h` | Shared header — array size constant and function prototype |
-| `oes32_hls_top.cpp` | Vitis HLS accelerator source — coherence, symmetry, FOLD8 checks |
+| `oes32_hls_top.cpp` | Vitis HLS accelerator source — modular coherence/symmetry/FOLD8 blocks |
 | `test_oes32_hls.cpp` | C++ testbench — 6 test cases, compiles with `g++`, no Vitis required |
 | `run_hls.tcl` | Vitis HLS automation script — project creation, synthesis, IP export |
 | `.github/workflows/vitis-hls.yml` | GitHub Actions CI — file verification + testbench compilation |
@@ -45,6 +45,12 @@ Validates four independent 8-node cyclic groups (rings):
 | 3 | 3, 7, 11, 15, 19, 23, 27, 31 |
 
 Each ring sum must satisfy `|ring_sum| < τ`.  The full FOLD8 check is processed in **O(1) time** through spatial unrolling (`#pragma HLS UNROLL`).
+
+### ⚡ Efficiency-oriented implementation details
+
+- The top-level function is split into dedicated compute blocks for coherence, symmetry, and FOLD8 checks.
+- EVEN/ODD symmetry uses pairwise accumulation (`i += 2`) to avoid per-iteration modulo/branch checks.
+- Ring dimensions are compile-time constants (`FOLD8_RING_COUNT`, `FOLD8_RING_SIZE`) to keep loop structure synthesis-friendly.
 
 ### Hardware Target
 

@@ -22,7 +22,7 @@
 // FOLD8 ring topology — four independent 8-node cyclic groups.
 // Each row lists the eight membrane indices that share cyclic symmetry.
 // --------------------------------------------------------------------
-static const int FOLD8_RINGS[4][8] = {
+static const int FOLD8_RINGS[FOLD8_RING_COUNT][FOLD8_RING_SIZE] = {
     {  0,  4,  8, 12, 16, 20, 24, 28 },
     {  1,  5,  9, 13, 17, 21, 25, 29 },
     {  2,  6, 10, 14, 18, 22, 26, 30 },
@@ -32,6 +32,66 @@ static const int FOLD8_RINGS[4][8] = {
 // Coherence floor — use COHERENCE_TAU from the shared header.
 // Aliased locally for readability inside this translation unit.
 static constexpr float TAU = COHERENCE_TAU;
+
+static float compute_max_residual(
+    const float proposed[N],
+    const float reference[N])
+{
+#pragma HLS INLINE
+    float max_residual = 0.0f;
+#ifdef __SYNTHESIS__
+COHERENCE_LOOP:
+#endif
+    for (int i = 0; i < N; i++) {
+#pragma HLS PIPELINE II=1
+        float diff = proposed[i] - reference[i];
+        float sq   = diff * diff;
+        if (sq > max_residual) {
+            max_residual = sq;
+        }
+    }
+    return max_residual;
+}
+
+static float compute_even_odd_symmetry_diff(const float proposed[N]) {
+#pragma HLS INLINE
+    float sum_even = 0.0f;
+    float sum_odd  = 0.0f;
+#ifdef __SYNTHESIS__
+SYMMETRY_EVEN_ODD_LOOP:
+#endif
+    for (int i = 0; i < N; i += 2) {
+#pragma HLS PIPELINE II=1
+        sum_even += proposed[i];
+        sum_odd  += proposed[i + 1];
+    }
+    float sym_diff = sum_even - sum_odd;
+    return (sym_diff < 0.0f) ? -sym_diff : sym_diff;
+}
+
+static int check_fold8_balance(const float proposed[N]) {
+#pragma HLS INLINE
+    int all_fold8_pass = 1;
+#ifdef __SYNTHESIS__
+FOLD8_OUTER:
+#endif
+    for (int r = 0; r < FOLD8_RING_COUNT; r++) {
+#pragma HLS PIPELINE II=1
+        float ring_sum = 0.0f;
+#ifdef __SYNTHESIS__
+FOLD8_INNER:
+#endif
+        for (int k = 0; k < FOLD8_RING_SIZE; k++) {
+#pragma HLS UNROLL
+            ring_sum += proposed[FOLD8_RINGS[r][k]];
+        }
+        float abs_sum = (ring_sum < 0.0f) ? -ring_sum : ring_sum;
+        if (abs_sum >= TAU) {
+            all_fold8_pass = 0;
+        }
+    }
+    return all_fold8_pass;
+}
 
 // --------------------------------------------------------------------
 // oes32_membrane_accelerator
@@ -62,18 +122,7 @@ void oes32_membrane_accelerator(
     // ----------------------------------------------------------------
     // 1. Coherence floor — compute max |proposed[i] - reference[i]|^2
     // ----------------------------------------------------------------
-    float max_residual = 0.0f;
-#ifdef __SYNTHESIS__
-COHERENCE_LOOP:
-#endif
-    for (int i = 0; i < N; i++) {
-#pragma HLS PIPELINE II=1
-        float diff = proposed[i] - reference[i];
-        float sq   = diff * diff;
-        if (sq > max_residual) {
-            max_residual = sq;
-        }
-    }
+    float max_residual = compute_max_residual(proposed, reference);
     *pass_coherence = (max_residual < TAU) ? 1 : 0;
 
     // ----------------------------------------------------------------
@@ -81,47 +130,12 @@ COHERENCE_LOOP:
     //    Sum of even-indexed elements ≈ sum of odd-indexed elements
     //    (tolerance: same TAU, applied to |sum_even - sum_odd|)
     // ----------------------------------------------------------------
-    float sum_even = 0.0f;
-    float sum_odd  = 0.0f;
-#ifdef __SYNTHESIS__
-SYMMETRY_LOOP:
-#endif
-    for (int i = 0; i < N; i++) {
-#pragma HLS PIPELINE II=1
-        if (i % 2 == 0) {
-            sum_even += proposed[i];
-        } else {
-            sum_odd += proposed[i];
-        }
-    }
-    {
-        float sym_diff = sum_even - sum_odd;
-        if (sym_diff < 0.0f) sym_diff = -sym_diff;
-        *pass_symmetry = (sym_diff < TAU) ? 1 : 0;
-    }
+    float sym_diff = compute_even_odd_symmetry_diff(proposed);
+    *pass_symmetry = (sym_diff < TAU) ? 1 : 0;
 
     // ----------------------------------------------------------------
     // 3. FOLD8 cyclic-ring balance
     //    Each ring of 8 nodes must have a balanced sum (|ring_sum| < TAU)
     // ----------------------------------------------------------------
-    int all_fold8_pass = 1;
-#ifdef __SYNTHESIS__
-FOLD8_OUTER:
-#endif
-    for (int r = 0; r < 4; r++) {
-#pragma HLS PIPELINE
-        float ring_sum = 0.0f;
-#ifdef __SYNTHESIS__
-FOLD8_INNER:
-#endif
-        for (int k = 0; k < 8; k++) {
-#pragma HLS UNROLL
-            ring_sum += proposed[FOLD8_RINGS[r][k]];
-        }
-        float abs_sum = (ring_sum < 0.0f) ? -ring_sum : ring_sum;
-        if (abs_sum >= TAU) {
-            all_fold8_pass = 0;
-        }
-    }
-    *pass_fold8 = all_fold8_pass;
+    *pass_fold8 = check_fold8_balance(proposed);
 }
