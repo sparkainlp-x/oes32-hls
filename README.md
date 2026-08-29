@@ -104,7 +104,7 @@ The GitHub Actions workflow (`.github/workflows/vitis-hls.yml`) runs on every pu
 
 ## 🧪 Python Modeling Example
 
-`/home/runner/work/oes32-hls/oes32-hls/examples/modal_reduction_2d_membrane.py` provides:
+`examples/modal_reduction_2d_membrane.py` provides:
 
 - Sparse 2D triangular FEM assembly (`M`, `C`, `K`)
 - Fixed-edge boundary elimination

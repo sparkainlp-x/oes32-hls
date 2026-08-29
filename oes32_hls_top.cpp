@@ -61,7 +61,7 @@ static float compute_even_odd_symmetry_diff(const float proposed[N]) {
 SYMMETRY_EVEN_ODD_LOOP:
 #endif
     for (int i = 0; i < N; i += 2) {
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=1
         sum_even += proposed[i];
         sum_odd  += proposed[i + 1];
     }
@@ -76,7 +76,7 @@ static int check_fold8_balance(const float proposed[N]) {
 FOLD8_OUTER:
 #endif
     for (int r = 0; r < FOLD8_RING_COUNT; r++) {
-#pragma HLS PIPELINE II=1
+#pragma HLS PIPELINE
         float ring_sum = 0.0f;
 #ifdef __SYNTHESIS__
 FOLD8_INNER:

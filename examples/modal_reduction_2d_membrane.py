@@ -138,9 +138,13 @@ def modal_reduce(mass, damping, stiffness, retained_modes=12):
     modes = modes[:, order]
     omega = np.sqrt(eigenvalues)
 
-    mass_r = modes.T @ mass @ modes
-    damping_r = modes.T @ damping @ modes
-    stiffness_r = modes.T @ stiffness @ modes
+    M_phi = mass @ modes
+    C_phi = damping @ modes
+    K_phi = stiffness @ modes
+
+    mass_r = modes.T @ M_phi
+    damping_r = modes.T @ C_phi
+    stiffness_r = modes.T @ K_phi
 
     return {
         "Phi": modes,
@@ -204,7 +208,13 @@ def reduced_state_space(reduced, force_r, sensor_r):
 
 def observability_matrix(A, C):
     n = A.shape[0]
-    return np.vstack([C @ np.linalg.matrix_power(A, i) for i in range(n)])
+    blocks = []
+    row = C.copy()
+    for i in range(n):
+        blocks.append(row)
+        if i < n - 1:
+            row = row @ A
+    return np.vstack(blocks)
 
 
 def design_observer_gain(A, C, pole_speed=4.0):
@@ -212,9 +222,29 @@ def design_observer_gain(A, C, pole_speed=4.0):
     if np.linalg.matrix_rank(observability) < A.shape[0]:
         raise ValueError("Sensor layout does not observe all retained modes")
 
-    plant_poles = np.linalg.eigvals(A)
-    observer_poles = pole_speed * np.real(plant_poles)
-    observer_poles = np.where(observer_poles < -1e-5, observer_poles, -1.0)
+    plant_poles = pole_speed * np.linalg.eigvals(A)
+    tol = 1e-10
+    observer_poles = []
+
+    for pole in plant_poles:
+        real_part = np.real(pole)
+        imag_part = np.imag(pole)
+
+        if abs(imag_part) <= tol:
+            observer_poles.append(real_part if real_part < -1e-5 else -1.0)
+            continue
+
+        if imag_part > 0.0:
+            stable_real = real_part if real_part < -1e-5 else -1.0
+            p = complex(stable_real, imag_part)
+            observer_poles.extend([p, np.conj(p)])
+
+    observer_poles = np.asarray(observer_poles, dtype=complex)
+    n_states = A.shape[0]
+
+    if len(observer_poles) != n_states:
+        raise ValueError("Unable to construct a complete conjugate observer pole set")
+
     placement = place_poles(A.T, C.T, observer_poles)
     return placement.gain_matrix.T
 
