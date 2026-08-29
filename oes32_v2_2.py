@@ -248,8 +248,8 @@ class ScoutAgent:
         shield: MembraneShield,
         decodeur_token: str,
         raw_boundary: Iterable[float],
-    ) -> tuple[bool, bool]:
-        """Returns (admitted, intervened)."""
+    ) -> tuple[bool, bool, float]:
+        """Returns (admitted, intervened, residual)."""
         assessment = self.evaluate_and_scout(shield.state, shield.tau)
 
         if assessment.intervention_required:
@@ -260,10 +260,10 @@ class ScoutAgent:
             result = shield.request_flip(
                 Role.DECODEUR, decodeur_token, steered_boundary
             )
-            return result.admitted, True
+            return result.admitted, True, result.residual
 
         result = shield.request_flip(Role.DECODEUR, decodeur_token, raw_boundary)
-        return result.admitted, False
+        return result.admitted, False, result.residual
 
 
 # ---------------------------------------------------------------------------
@@ -336,7 +336,7 @@ def run_mode_raw_v2(
             admissions += 1
         else:
             denials += 1
-            if shield.latch_events == 1 and first_latch_cycle is None:
+            if shield.latch_events > 0 and first_latch_cycle is None:
                 first_latch_cycle = step
 
     sorted_res = sorted(residuals)
@@ -382,19 +382,17 @@ def run_mode_scout_v2(
             burst_prob, burst_scale, shock_prob, shock_scale,
         )
 
-        admitted, intervened = scout.assist_write(shield, token, wave)
+        admitted, intervened, flip_residual = scout.assist_write(shield, token, wave)
 
         if intervened:
             interventions_total += 1
             if admitted:
                 interventions_successful += 1
 
-        # v2.2: record actual last-flip residual via shield cycle tracking
-        # We approximate from shield state; scout re-runs a flip so we rely on
-        # the fact that the last request_flip residual is embedded in the result
-        # captured inside assist_write. Use tau*0.5 as proxy for admitted cycles
-        # (same conservative estimate as v2.1 scout mode).
-        last_residuals.append(shield.tau * 0.5 if admitted else shield.tau * 2.0)
+        # v2.2: record the actual residual returned by the last flip
+        last_residuals.append(
+            flip_residual if isfinite(flip_residual) else shield.tau * 2.0
+        )
 
         if admitted:
             admissions += 1
@@ -557,14 +555,14 @@ def run_monte_carlo_v22(
     for mode in ("raw_v2", "scout_v2"):
         print(f"\n[{mode}]")
         print(f"  trials                 : {sum(1 for r in rows if r['mode'] == mode)}")
-        print(f"  latch_trial_rate       : {latch_rate(mode):.3f}")
-        print(f"  mean_latch_events      : {agg(mode, 'latch_events', 'mean'):.3f}")
-        print(f"  admission_rate         : {admission_rate(mode):.4f}")
-        print(f"  mean_interv_precision  : {agg(mode, 'intervention_precision', 'mean'):.3f}")
-        print(f"  mean_resid_p95         : {agg(mode, 'resid_p95', 'mean'):.4f}")
-        print(f"  p95_resid_p99          : {agg(mode, 'resid_p99', 'p95'):.4f}")
-        print(f"  mean_denials           : {agg(mode, 'denials', 'mean'):.2f}")
-        print(f"  mean_admissions        : {agg(mode, 'admissions', 'mean'):.2f}")
+        print(f"  latch_trial_rate       : {latch_rate(mode) or 0.0:.3f}")
+        print(f"  mean_latch_events      : {agg(mode, 'latch_events', 'mean') or 0.0:.3f}")
+        print(f"  admission_rate         : {admission_rate(mode) or 0.0:.4f}")
+        print(f"  mean_interv_precision  : {agg(mode, 'intervention_precision', 'mean') or 0.0:.3f}")
+        print(f"  mean_resid_p95         : {agg(mode, 'resid_p95', 'mean') or 0.0:.4f}")
+        print(f"  p95_resid_p99          : {agg(mode, 'resid_p99', 'p95') or 0.0:.4f}")
+        print(f"  mean_denials           : {agg(mode, 'denials', 'mean') or 0.0:.2f}")
+        print(f"  mean_admissions        : {agg(mode, 'admissions', 'mean') or 0.0:.2f}")
 
     print(f"\nPer-trial metrics written to: {out_csv}")
 
