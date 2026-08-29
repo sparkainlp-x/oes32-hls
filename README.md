@@ -17,6 +17,7 @@ Hardware-accelerated telemetry triage for the **OES-32 Membrane Shield** — tra
 | `oes32_hls_top.cpp` | Vitis HLS accelerator source — modular coherence/symmetry/FOLD8 blocks |
 | `test_oes32_hls.cpp` | C++ testbench — 6 test cases, compiles with `g++`, no Vitis required |
 | `run_hls.tcl` | Vitis HLS automation script — project creation, synthesis, IP export |
+| `examples/modal_reduction_2d_membrane.py` | 2D sparse FEM modal reduction + observer-ready state-space example |
 | `.github/workflows/vitis-hls.yml` | GitHub Actions CI — file verification + testbench compilation |
 
 ---
@@ -98,6 +99,21 @@ The GitHub Actions workflow (`.github/workflows/vitis-hls.yml`) runs on every pu
 1. **Verify HLS Files** — confirms `oes32_hls_top.cpp` and `run_hls.tcl` are present.
 2. **Compile & Run Testbench** — builds `test_oes32_hls.cpp` with `g++` and executes it; the job fails if any test case fails.
 3. **Synthesis stage** — echoes the synthesis command (full Vitis HLS synthesis requires an AMD Vitis Docker image; see the workflow file for instructions to enable it).
+
+---
+
+## 🧪 Python Modeling Example
+
+`/home/runner/work/oes32-hls/oes32-hls/examples/modal_reduction_2d_membrane.py` provides:
+
+- Sparse 2D triangular FEM assembly (`M`, `C`, `K`)
+- Fixed-edge boundary elimination
+- Low-order generalized modal extraction (`eigsh`)
+- Reduced modal state-space (`A`, `B`, `C`, `D`)
+- Luenberger observer gain design and one-step update
+- OES-32 field sampling + energy normalization
+
+This script is intended for simulation/prototyping of the observer pipeline before hardware mapping.
 
 ---
 
