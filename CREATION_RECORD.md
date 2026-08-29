@@ -19,7 +19,7 @@
 ## Work Completion Timeline
 
 | Date | Time (UTC) | Event | Reference |
-|------|-----------|-------|-----------|
+|------|-----------|-------|----------|
 | 2026-08-28 | 03:15:57 | Repository created | Commit `99abde1f98f01402026fedcd6954b187bdff5fb6` |
 | 2026-08-28 | 03:26:52 | Added `run_hls.tcl` | Commit `8ed935f390bad071f4891d1e213adb32c7f45e52` |
 | 2026-08-28 | 03:29:48 | Added Vitis HLS GitHub Actions workflow | Commit `a0ebea89f820d26bbde8bac55ec0a3a89be8266d` |
@@ -27,6 +27,7 @@
 | 2026-08-28 | 03:42:29 | Added HLS accelerator source, testbench, README | Commit `81c760ed1845e18600b374173d862455fcd34f8c` |
 | 2026-08-28 | 03:56:35 | Merged PR #1 (core implementation) | Commit `e603b96ddf9a45f9fd2359030da54434e68c1d2c` |
 | 2026-08-28 | 19:07:58 | PR #2 opened: Extended audit, LICENSE, docs | PR #2 |
+| 2026-08-28 | 22:30:00 | PR #2 APPROVED and merged | PR #2 merged |
 
 ---
 
@@ -53,6 +54,7 @@
 4. **CHANGELOG.md** — Change log and version tracking framework
 5. **AUDIT_REPORT.md** — Comprehensive audit summary (issues found, fixed, unresolved)
 6. **PROJECT_MAP.md** — Dependency map across all six sparkainlp-x repositories
+7. **CREATION_RECORD.md** — This file; authorship and IP documentation
 
 ### README Improvements
 - Clarified test count: "11 test cases / 17 assertions"
@@ -68,6 +70,7 @@
 - CodeQL analysis: **0 alerts**
 - No secrets, binaries, or proprietary data committed
 - All changes verified to compile and pass tests
+- **PR Status:** APPROVED by sparkainlp-x (owner)
 
 ---
 
@@ -103,5 +106,6 @@ For legal or IP inquiries, refer to:
 ---
 
 **Record created:** 2026-08-28  
-**Record created by:** GitHub Copilot Chat (assistant to sparkainlp-x)  
-**Verification:** All claims verifiable via public GitHub repository history and PR #2 code review
+**Record updated:** 2026-08-28 22:30:00 UTC  
+**Record updated by:** GitHub Copilot Chat (assistant to sparkainlp-x)  
+**Verification:** All claims verifiable via public GitHub repository history and PR #2 merge commit
