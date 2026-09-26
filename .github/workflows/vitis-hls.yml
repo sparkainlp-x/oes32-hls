@@ -1,4 +1,4 @@
-name: Vitis HLS Synthesis Automation
+name: OES-32 HLS testbench (synthesis UNRUN)
 
 on:
   push:
@@ -30,13 +30,16 @@ jobs:
         run: ./test_oes32_hls
 
   # ------------------------------------------------------------------
-  # Job 2: Verify HLS source and script files are present, then
-  # confirm the synthesis command.  Full synthesis requires an AMD
-  # Vitis HLS Docker image; uncomment the vitis_hls line and update
-  # `runs-on` to a self-hosted runner with Vitis installed to enable.
+  # Job 2: PLACEHOLDER. Verifies that the HLS source and script files
+  # are present and ECHOES the synthesis command. It does NOT run
+  # Vitis HLS; a green result means "files present", not "synthesis
+  # passed". Evidence tag for synthesis: UNRUN.
+  # To enable real synthesis, uncomment the vitis_hls line, move the
+  # job to a self-hosted runner with AMD Vitis installed, upload the
+  # report as an artifact, and rename this job.
   # ------------------------------------------------------------------
   hls-synthesis:
-    name: Synthesize OES-32 HLS Accelerator
+    name: HLS synthesis (UNRUN — placeholder echo)
     runs-on: ubuntu-latest
     needs: testbench
     permissions:
@@ -50,11 +53,11 @@ jobs:
           echo "Checking OES-32 HLS source and automation scripts..."
           ls -la oes32_hls_top.h oes32_hls_top.cpp run_hls.tcl
 
-      - name: Execute Vitis HLS Pipeline
-        # To enable full hardware synthesis, use an AMD Vitis Docker
-        # container (e.g., xilinx/vitis) and uncomment the line below.
+      - name: Placeholder - echo synthesis command (UNRUN)
+        # To enable full hardware synthesis, use an AMD Vitis environment
+        # and uncomment the vitis_hls line below.
         run: |
-          echo "Target Architecture: AMD Xilinx Zynq UltraScale+ RFSoC (ZCU111)"
-          echo "Synthesis command: vitis_hls -f run_hls.tcl"
+          echo "TARGET architecture: AMD Xilinx Zynq UltraScale+ RFSoC (ZCU111)"
+          echo "Synthesis command (NOT executed): vitis_hls -f run_hls.tcl"
           # vitis_hls -f run_hls.tcl
-          echo "Pipeline configuration verified successfully."
+          echo "Synthesis status: UNRUN (placeholder step; no synthesis was performed)."
