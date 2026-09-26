@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "OES-32 HLS Prototype: Profile A sidecar (C++ HLS + g++ testbench)"
+type: software
+authors:
+  - family-names: "Brisson"
+    given-names: "Jean-François"
+    affiliation: "Spark AI NLP"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: add ORCID when available
+repository-code: "https://github.com/sparkainlp-x/oes32-hls"
+url: "https://sparkainlpx.xyz"
+license: MIT
+version: "0.1.0"
+date-released: "2026-09-26"
+abstract: >-
+  C++14 High-Level Synthesis research prototype of OES-32 telemetry-triage checks
+  (coherence floor, EVEN/ODD symmetry, FOLD8 ring balance) with a portable g++
+  testbench. Profile A sidecar to the normative residual in oes32-residual
+  (ADR-001). AMD ZCU111 is a TARGET; FPGA synthesis and board runs are UNRUN.
+keywords:
+  - oes32
+  - hls
+  - vitis-hls
+  - fpga
+  - cpp
