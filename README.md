@@ -1,35 +1,25 @@
 # OES-32 HLS Prototype
 
-> **Profile A sidecar.** The normative residual definition is [oes32-residual@b77b612](https://github.com/sparkainlp-x/oes32-residual/tree/b77b61254f15778c6ae221843dceac7a8571158e) (ADR-001). This repo's thresholds and FOLD8/symmetry definitions are Profile A extensions and are not normative.
+Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-residual): a C++ High-Level Synthesis (HLS) research prototype of OES-32 telemetry-triage checks, with a `g++` testbench. FPGA synthesis is **UNRUN**.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/sparkainlp-x/oes32-hls/actions/workflows/vitis-hls.yml/badge.svg)](https://github.com/sparkainlp-x/oes32-hls/actions/workflows/vitis-hls.yml)
-[![Target](https://img.shields.io/badge/Target-AMD_Zynq_UltraScale%2B_RFSoC-blue?style=flat-square)](https://www.amd.com/en/products/adaptive-socs-and-fpgas/soc/zynq-ultrascale-plus-rfsoc.html)
-[![Synthesis](https://img.shields.io/badge/FPGA_synthesis-UNRUN-lightgrey?style=flat-square)](#evidence-status)
-[![Language](https://img.shields.io/badge/HLS-C%2B%2B14-informational?style=flat-square)](https://www.xilinx.com/products/design-tools/vitis/vitis-hls.html)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](#what-it-is-not)
+[![FPGA synthesis: UNRUN](https://img.shields.io/badge/FPGA%20synthesis-UNRUN-lightgrey.svg)](#evidence-tags)
+[![ADR-001: Profile A sidecar](https://img.shields.io/badge/ADR--001-Profile%20A%20sidecar-blue.svg)](#relationship-to-adr-001)
 
-A C++ High-Level Synthesis (HLS) **research prototype** of OES-32 telemetry-triage checks, translated from a Python software simulation. The AMD Xilinx Zynq UltraScale+ RFSoC **ZCU111** evaluation board is a **TARGET** for co-design exploration. Nothing in this repository has been synthesized, placed, routed, or run on an FPGA.
+## What it is
 
-## Evidence status
+- C++14 HLS source (`oes32_hls_top.cpp/.h`) implementing three checks on a 32-element vector: a coherence floor, EVEN/ODD symmetry, and FOLD8 ring balance, behind an AXI4-Lite interface declaration.
+- A portable `g++` testbench (6 test cases, 8 checks) that runs in CI without any AMD/Xilinx tools.
+- A Vitis HLS script (`run_hls.tcl`) targeting the AMD Zynq UltraScale+ RFSoC **ZCU111** board as a **TARGET** for co-design exploration.
 
-| Item | Tag | Notes |
-|---|---|---|
-| C++ testbench (`g++`) | Runs in CI | 6 test cases, 8 checks; prints `Results: 8 / 8 tests passed` |
-| Vitis HLS synthesis | **UNRUN** | The CI synthesis job is a placeholder that only echoes the command |
-| Latency < 20 ns | **TARGET** | Design intent, not measured; no synthesis report exists |
-| 100 MHz clock, II = 1 | **TARGET** | Set in `run_hls.tcl` / pragmas; not verified by a timing report |
-| Board deployment on ZCU111 | **UNRUN** | No bitstream, no board run |
+## What it is NOT
 
-This is classical telemetry-triage IP exploration. It is not a QPU, not a quantum device, not production or certified hardware, and not a medical or field product.
-
-## Relation to oes32-residual (ADR-001 · Profile A)
-
-The normative residual **R** lives in [`oes32-residual`](https://github.com/sparkainlp-x/oes32-residual) (pin `b77b61254f15778c6ae221843dceac7a8571158e`). The checks here are **Profile A sidecars** and differ from the normative definition in two documented ways (see [docs/ADR-001-oes32-tau-unification.md](docs/ADR-001-oes32-tau-unification.md)):
-
-- **Squared difference:** this prototype compares `|proposed[i] − reference[i]|²` to τ = 0.09, which is equivalent to an absolute-difference threshold of 0.3.
-- **`≥` fail rule:** this prototype fails when the squared residual is `≥ τ` (equality fails). The normative contract fails only when `R > tolerance` (equality passes).
-
----
+- **Not** synthesized, placed, routed, or run on an FPGA. No synthesis or timing report exists.
+- **Not** a QPU, a quantum device, or a quantum-hardware result. This is classical telemetry-triage IP exploration.
+- **Not** production, certified, medical, or field hardware.
+- **Not** the normative OES-32 residual. That is [oes32-residual@b77b612](https://github.com/sparkainlp-x/oes32-residual/tree/b77b61254f15778c6ae221843dceac7a8571158e) (ADR-001); see the documented differences below.
 
 ## What this repository contains
 
@@ -42,8 +32,7 @@ The normative residual **R** lives in [`oes32-residual`](https://github.com/spar
 | `examples/kuramoto_oes32_bridge.py` | SYNTHETIC classical Kuramoto-oscillator example (see known issue below) |
 | `.github/workflows/vitis-hls.yml` | CI: testbench build + run; synthesis step is a placeholder (UNRUN) |
 | `LICENSE` | MIT License |
-
----
+| `CITATION.cff` | Citation metadata |
 
 ## Prototype architecture
 
@@ -83,11 +72,9 @@ Each ring sum must satisfy `|ring_sum| < τ`. The loops carry `#pragma HLS UNROL
 | Interface | AXI4-Lite (s_axilite) | TARGET |
 | Latency | < 20 ns (pipelined, II = 1) | **TARGET**: design intent, not measured; synthesis UNRUN |
 
----
+## Quickstart
 
-## Quick start
-
-### Run the testbench (no Xilinx tools required)
+Run the testbench (no Xilinx tools required; any C++14 compiler):
 
 ```bash
 git clone https://github.com/sparkainlp-x/oes32-hls.git
@@ -98,13 +85,11 @@ g++ -std=c++14 -o test_oes32_hls test_oes32_hls.cpp oes32_hls_top.cpp
 
 Expected output ends with:
 
-```
+```text
 Results: 8 / 8 tests passed
 ```
 
-(8 = the number of individual checks across the 6 test cases.)
-
-### Run HLS synthesis (Vitis HLS required; not yet done)
+HLS synthesis (requires AMD Vitis HLS; **UNRUN**, never performed):
 
 ```bash
 vitis_hls -f run_hls.tcl
@@ -112,31 +97,53 @@ vitis_hls -f run_hls.tcl
 
 Reports would be written to `oes32_hls_proj/solution1/syn/report/`. No such report has been published. Until one is attached, every latency, clock, and resource figure stays **TARGET**.
 
----
+## Tests
 
-## Continuous integration
+The testbench `test_oes32_hls.cpp` covers 6 test cases with 8 individual checks and exits non-zero if any check fails.
+
+### Continuous integration
 
 `.github/workflows/vitis-hls.yml` runs on every push and pull request to `main`:
 
 1. **Build & Run C++ Testbench:** builds with `g++` and runs it. The job fails if any check fails.
 2. **HLS synthesis (UNRUN — placeholder echo):** confirms the HLS files exist and **only echoes** the `vitis_hls` command. It does **not** synthesize anything. A green result means "files present", not "synthesis passed".
 
----
+## Evidence tags
 
-## Known issues
+| Item | Tag | Notes |
+|---|---|---|
+| C++ testbench (`g++`) | **SYNTHETIC** inputs; runs in CI | 6 test cases, 8 checks; prints `Results: 8 / 8 tests passed` |
+| Vitis HLS synthesis | **UNRUN** | The CI synthesis job is a placeholder that only echoes the command |
+| Latency < 20 ns | **TARGET** | Design intent, not measured; no synthesis report exists |
+| 100 MHz clock, II = 1 | **TARGET** | Set in `run_hls.tcl` / pragmas; not verified by a timing report |
+| Board deployment on ZCU111 | **UNRUN** | No bitstream, no board run |
+| `examples/kuramoto_oes32_bridge.py` output | **SYNTHETIC** | Classical example; see known issue |
 
-- `examples/kuramoto_oes32_bridge.py`: with the default unit amplitudes, every phase configuration yields `|ψ_i|² = 1/n`, so the normalized entropy is always 1 and `coherence_score` is always 0. Tracked as an open issue; the math is unchanged in this revision.
+Tag definitions: [sparkainlp-x/.github](https://github.com/sparkainlp-x/.github#evidence-tags).
 
----
+### Known issues
 
-## Related repositories
+- `examples/kuramoto_oes32_bridge.py`: with the default unit amplitudes, every phase configuration yields `|ψ_i|² = 1/n`, so the normalized entropy is always 1 and `coherence_score` is always 0. Tracked in [#5](https://github.com/sparkainlp-x/oes32-hls/issues/5).
+
+## Relationship to ADR-001
+
+The normative residual **R** lives in [`oes32-residual`](https://github.com/sparkainlp-x/oes32-residual) (pin `b77b61254f15778c6ae221843dceac7a8571158e`). The checks here are **Profile A sidecars** and differ from the normative definition in two documented ways (see [docs/ADR-001-oes32-tau-unification.md](docs/ADR-001-oes32-tau-unification.md)):
+
+- **Squared difference:** this prototype compares `|proposed[i] − reference[i]|²` to τ = 0.09, which is equivalent to an absolute-difference threshold of 0.3.
+- **`≥` fail rule:** this prototype fails when the squared residual is `≥ τ` (equality fails). The normative contract fails only when `R > tolerance` (equality passes).
+
+The OES-512 weighted latch (S = 0.45·Peak + 0.35·RMS + 0.20·MeanAbs, τ = 0.50) is a **TARGET** and is not implemented here.
+
+Related repositories:
 
 - [sparkainlp-x/oes32-residual](https://github.com/sparkainlp-x/oes32-residual): normative residual contract (ADR-001)
 - [sparkainlp-x/oes32_engine](https://github.com/sparkainlp-x/oes32_engine): Profile A software sidecars (Python)
 - [sparkainlp-x/qldpc_decoder_cpp](https://github.com/sparkainlp-x/qldpc_decoder_cpp): C++/HLS qLDPC decoder scaffold (hardware path UNRUN)
 
----
+## Citation
+
+Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this repository" button.
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Copyright (c) 2026 Jean-François Brisson, Spark AI NLP.
+[MIT](LICENSE). Copyright (c) 2026 Jean-François Brisson, Spark AI NLP.

@@ -67,3 +67,9 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Testbench binary and Vitis HLS project output
+test_oes32_hls
+oes32_hls_proj/
+*.jou
+vitis_hls.log
