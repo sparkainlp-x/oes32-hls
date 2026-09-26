@@ -1,10 +1,16 @@
 """
-Kuramoto Oscillator to OES-32 Quantum State Bridge
+Kuramoto Oscillator to OES-32 Normalized-Vector Bridge (SYNTHETIC, classical)
 
-This module bridges classical Kuramoto phase synchronization dynamics
-to quantum state representation in the OES-32 framework.
+This module maps classical Kuramoto phase synchronization dynamics to a
+normalized 32-component complex vector used by OES-32 examples. Everything
+here is classical and SYNTHETIC: the vector is not a quantum state, and no
+qubits or quantum hardware are involved.
 
-Original creative work by sparkainlp-x
+Known limitation: with the default unit amplitudes, |psi_i|^2 = 1/n for every
+phase configuration, so normalized_entropy() is always 1 and coherence_score()
+is always 0. See the open issue; the math is intentionally unchanged here.
+
+Original work by Jean-François Brisson, Spark AI NLP (GitHub: sparkainlp-x)
 Created: 2026-08-29
 License: MIT
 
@@ -12,11 +18,11 @@ Algorithms:
   - kuramoto_step: Phase synchronization update rule
   - kuramoto_order: Synchronization parameter (Kuramoto parameter R)
   - simulate_kuramoto: Full oscillator network simulation
-  - phases_to_oes32: Convert Kuramoto phases to normalized quantum state
+  - phases_to_oes32: Convert Kuramoto phases to a normalized complex vector
   - normalized_entropy: Information-theoretic measure
   - coherence_score: Combined synchronization-entropy metric
 
-Authored by: sparkainlp-x <sparkainlp@gmail.com>
+Authored by: Jean-François Brisson, Spark AI NLP
 GitHub: https://github.com/sparkainlp-x
 """
 
@@ -118,22 +124,23 @@ def simulate_kuramoto(
 
 def phases_to_oes32(theta, amplitudes=None):
     """
-    Convert Kuramoto phases to normalized OES-32 quantum state.
+    Convert Kuramoto phases to a normalized OES-32 complex vector (classical).
     
     Constructs a complex state vector:
         ψ = (1/||ψ||) Σᵢ Aᵢ exp(i θᵢ)
     
     Then computes probability amplitudes |ψᵢ|².
     
-    This bridges classical Kuramoto synchronization to quantum coherence metrics.
+    This maps classical Kuramoto synchronization to classical vector-coherence
+    metrics. It is not a quantum state.
     
     Args:
         theta: Phase array (radians), shape (n,)
         amplitudes: Optional amplitude factors (default: ones), shape (n,)
     
     Returns:
-        psi: Normalized quantum state vector, shape (n,)
-        probabilities: Probability amplitudes |ψᵢ|², shape (n,)
+        psi: Normalized complex vector, shape (n,)
+        probabilities: Normalized weights |ψᵢ|², shape (n,)
     
     Author: sparkainlp-x
     """
@@ -225,10 +232,10 @@ if __name__ == "__main__":
     print()
 
     # Convert final phases to OES-32 state
-    print("2. Converting final Kuramoto state to OES-32 quantum state...")
+    print("2. Converting final Kuramoto phases to OES-32 normalized vector (SYNTHETIC)...")
     final_theta = theta_hist[-1]
     psi, probs = phases_to_oes32(final_theta)
-    print(f"   State vector norm: {np.linalg.norm(psi):.6f}")
+    print(f"   Vector norm:      {np.linalg.norm(psi):.6f}")
     print(f"   Probability sum:  {np.sum(probs):.6f}")
     print()
 
@@ -242,6 +249,6 @@ if __name__ == "__main__":
 
     print("✓ Bridge demonstration complete.")
     print()
-    print("Creative work authored by sparkainlp-x")
-    print("Copyright © 2026 sparkainlp-x")
+    print("Author: Jean-François Brisson, Spark AI NLP")
+    print("Copyright (c) 2026 Jean-François Brisson, Spark AI NLP")
     print("License: MIT")
