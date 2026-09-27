@@ -45,4 +45,4 @@ The source code and documentation are the work of the repository owner, with AI-
 
 ## License
 
-MIT. See [LICENSE](LICENSE) once the licensing PR is merged. Copyright (c) 2026 Jean-François Brisson, Spark AI NLP.
+MIT. See [LICENSE](../LICENSE) once the licensing PR is merged. Copyright (c) 2026 Jean-François Brisson, Spark AI NLP.
