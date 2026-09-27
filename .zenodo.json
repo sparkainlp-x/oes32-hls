@@ -1,0 +1,37 @@
+{
+  "upload_type": "software",
+  "title": "OES-32 HLS Prototype: Profile A sidecar (C++ HLS + g++ testbench)",
+  "description": "<p>Profile A sidecar to oes32-residual: a C++14 High-Level Synthesis (HLS) research prototype of OES-32 telemetry-triage checks (coherence floor, EVEN/ODD symmetry, FOLD8 ring balance) on a 32-element vector, behind an AXI4-Lite interface declaration, with a portable <code>g++</code> testbench (6 test cases, 8 checks) that runs in CI without AMD/Xilinx tools. A Vitis HLS script targets the AMD Zynq UltraScale+ RFSoC ZCU111 board as a <strong>TARGET</strong>.</p><p><strong>Relationship to ADR-001.</strong> The normative residual R lives in <a href=\"https://github.com/sparkainlp-x/oes32-residual/tree/b77b61254f15778c6ae221843dceac7a8571158e\">oes32-residual@b77b612</a>. The checks here differ in two documented ways: a squared difference compared to τ = 0.09 (equivalent to an absolute threshold of 0.3), and a <code>≥</code> fail rule (the normative contract fails only when R &gt; tolerance).</p><p><strong>Evidence tags.</strong> C++ testbench: <strong>SYNTHETIC</strong> inputs, runs in CI. Vitis HLS synthesis: <strong>UNRUN</strong> (the CI synthesis job is a placeholder that only echoes the command). Latency &lt; 20 ns, 100 MHz clock, II = 1: <strong>TARGET</strong> (design intent, no synthesis or timing report exists). Board deployment on ZCU111: <strong>UNRUN</strong>. Kuramoto example output: <strong>SYNTHETIC</strong>.</p><p><strong>Scope and limits.</strong> Research prototype. Not synthesized, placed, routed, or run on an FPGA; not a QPU, quantum device, or quantum-hardware result; not production, certified, medical, or field hardware; not the normative OES-32 residual.</p><p>Evidence tags follow <a href=\"https://github.com/sparkainlp-x/.github#evidence-tags\">sparkainlp-x/.github</a> (SYNTHETIC / REPORTED / TARGET / UNRUN).</p>",
+  "creators": [
+    {
+      "name": "Brisson, Jean-François",
+      "affiliation": "Spark AI NLP"
+    }
+  ],
+  "access_right": "open",
+  "license": "MIT",
+  "keywords": [
+    "OES-32",
+    "high-level synthesis",
+    "Vitis HLS",
+    "C++",
+    "FPGA",
+    "testbench",
+    "Profile A sidecar",
+    "telemetry triage",
+    "ZCU111"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/sparkainlp-x/oes32-hls",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.22985520",
+      "relation": "references",
+      "resource_type": "software"
+    }
+  ],
+  "language": "eng"
+}
