@@ -7,6 +7,7 @@ Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-resi
 [![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](#what-it-is-not)
 [![FPGA synthesis: UNRUN](https://img.shields.io/badge/FPGA%20synthesis-UNRUN-lightgrey.svg)](#evidence-tags)
 [![ADR-001: Profile A sidecar](https://img.shields.io/badge/ADR--001-Profile%20A%20sidecar-blue.svg)](#relationship-to-adr-001)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22985525.svg)](https://doi.org/10.5281/zenodo.22985525)
 
 ## What it is
 
@@ -141,6 +142,8 @@ Related repositories:
 - [sparkainlp-x/qldpc_decoder_cpp](https://github.com/sparkainlp-x/qldpc_decoder_cpp): C++/HLS qLDPC decoder scaffold (hardware path UNRUN)
 
 ## Citation
+
+Archived on Zenodo: concept DOI [10.5281/zenodo.22985525](https://doi.org/10.5281/zenodo.22985525) (all versions; resolves to the latest). The v0.1.1 archive is [10.5281/zenodo.22985526](https://doi.org/10.5281/zenodo.22985526).
 
 Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this repository" button.
 
