@@ -6,9 +6,11 @@ normalized 32-component complex vector used by OES-32 examples. Everything
 here is classical and SYNTHETIC: the vector is not a quantum state, and no
 qubits or quantum hardware are involved.
 
-Known limitation: with the default unit amplitudes, |psi_i|^2 = 1/n for every
-phase configuration, so normalized_entropy() is always 1 and coherence_score()
-is always 0. See the open issue; the math is intentionally unchanged here.
+coherence_score() combines the Kuramoto order parameter R with the normalized
+entropy of the phase histogram (phase_entropy). An earlier version used the
+entropy of |psi_i|^2, which is always uniform for unit amplitudes, so the score
+was always 0 (issue #5). The score is a SYNTHETIC illustration, not a measured
+physical coherence.
 
 Original work by Jean-François Brisson, Spark AI NLP (GitHub: sparkainlp-x)
 Created: 2026-08-29
@@ -20,7 +22,8 @@ Algorithms:
   - simulate_kuramoto: Full oscillator network simulation
   - phases_to_oes32: Convert Kuramoto phases to a normalized complex vector
   - normalized_entropy: Information-theoretic measure
-  - coherence_score: Combined synchronization-entropy metric
+  - phase_entropy: Normalized entropy of the phase histogram
+  - coherence_score: Combined synchronization / phase-entropy metric
 
 Authored by: Jean-François Brisson, Spark AI NLP
 GitHub: https://github.com/sparkainlp-x
@@ -180,32 +183,56 @@ def normalized_entropy(probabilities):
     return entropy / np.log2(len(p))
 
 
-def coherence_score(theta, probabilities):
+def phase_entropy(theta, bins=16):
     """
-    Combined coherence metric: synchronization × (1 - entropy).
-    
-    Coherence = R × (1 - H/log₂(n))
-    
-    Where:
-      R = Kuramoto synchronization order parameter
-      H = Shannon entropy of probabilities
-    
-    High coherence requires both:
-      1. Phase synchronization (R → 1)
-      2. Localized probability (H → 0)
-    
+    Normalized Shannon entropy of the phase distribution.
+
+    Phases are wrapped to [0, 2π) and binned into ``bins`` equal-width bins.
+    Returns H(histogram) / log₂(bins) ∈ [0, 1]: 0 when all phases fall in one
+    bin, 1 when they are spread evenly over all bins.
+
     Args:
         theta: Phase array (radians), shape (n,)
-        probabilities: Probability amplitudes |ψᵢ|², shape (n,)
-    
+        bins: Number of histogram bins (>= 2)
+
+    Returns:
+        Normalized phase entropy ∈ [0, 1]
+    """
+    if bins < 2:
+        raise ValueError("bins must be >= 2")
+    wrapped = np.mod(np.asarray(theta, dtype=float), 2 * np.pi)
+    counts, _ = np.histogram(wrapped, bins=bins, range=(0.0, 2 * np.pi))
+    p = counts[counts > 0] / counts.sum()
+    return float(-np.sum(p * np.log2(p)) / np.log2(bins))
+
+
+def coherence_score(theta, probabilities=None, bins=16):
+    """
+    Combined coherence metric: synchronization × (1 - phase entropy).
+
+    Coherence = R × (1 - H_phase)
+
+    Where:
+      R       = Kuramoto synchronization order parameter
+      H_phase = normalized entropy of the phase histogram (phase_entropy)
+
+    High values require phases that are both aligned (R → 1) and concentrated
+    in few histogram bins (H_phase → 0). SYNTHETIC illustration only.
+
+    Args:
+        theta: Phase array (radians), shape (n,)
+        probabilities: Deprecated and ignored. Kept so existing calls
+            ``coherence_score(theta, probs)`` keep working. The entropy of
+            |ψᵢ|² is uniform for unit amplitudes, which made the old score
+            always 0 (issue #5).
+        bins: Number of histogram bins for phase_entropy
+
     Returns:
         Coherence score ∈ [0, 1]
-    
-    Author: sparkainlp-x
     """
     R = kuramoto_order(theta)
-    H = normalized_entropy(probabilities)
-    return R * (1 - H)
+    H = phase_entropy(theta, bins=bins)
+    return float(R * (1 - H))
 
 
 # ============================================================================
@@ -242,9 +269,11 @@ if __name__ == "__main__":
     # Compute coherence metrics
     print("3. Computing coherence metrics...")
     ent = normalized_entropy(probs)
-    coh = coherence_score(final_theta, probs)
-    print(f"   Normalized entropy: {ent:.4f}")
-    print(f"   Coherence score:    {coh:.4f}")
+    h_phase = phase_entropy(final_theta)
+    coh = coherence_score(final_theta)
+    print(f"   |psi|^2 entropy:    {ent:.4f}  (always 1.0 for unit amplitudes)")
+    print(f"   Phase entropy:      {h_phase:.4f}")
+    print(f"   Coherence score:    {coh:.4f}  (SYNTHETIC)")
     print()
 
     print("✓ Bridge demonstration complete.")

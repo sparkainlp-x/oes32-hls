@@ -30,7 +30,8 @@ Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-resi
 | `oes32_hls_top.cpp` | HLS source: coherence, symmetry, FOLD8 checks |
 | `test_oes32_hls.cpp` | C++ testbench: 6 test cases / 8 checks, compiles with `g++`, no Vitis required |
 | `run_hls.tcl` | Vitis HLS automation script (project creation, synthesis, IP export). Not yet run |
-| `examples/kuramoto_oes32_bridge.py` | SYNTHETIC classical Kuramoto-oscillator example (see known issue below) |
+| `examples/kuramoto_oes32_bridge.py` | SYNTHETIC classical Kuramoto-oscillator example (order parameter R and phase-histogram entropy) |
+| `tests/test_kuramoto_bridge.py` | pytest checks for the Python example (run in CI) |
 | `.github/workflows/vitis-hls.yml` | CI: testbench build + run; synthesis step is a placeholder (UNRUN) |
 | `LICENSE` | MIT License |
 | `CITATION.cff` | Citation metadata |
@@ -118,13 +119,13 @@ The testbench `test_oes32_hls.cpp` covers 6 test cases with 8 individual checks 
 | Latency < 20 ns | **TARGET** | Design intent, not measured; no synthesis report exists |
 | 100 MHz clock, II = 1 | **TARGET** | Set in `run_hls.tcl` / pragmas; not verified by a timing report |
 | Board deployment on ZCU111 | **UNRUN** | No bitstream, no board run |
-| `examples/kuramoto_oes32_bridge.py` output | **SYNTHETIC** | Classical example; see known issue |
+| `examples/kuramoto_oes32_bridge.py` output | **SYNTHETIC** | Classical example; `coherence_score` = R × (1 − phase entropy) |
 
 Tag definitions: [sparkainlp-x/.github](https://github.com/sparkainlp-x/.github#evidence-tags).
 
 ### Known issues
 
-- `examples/kuramoto_oes32_bridge.py`: with the default unit amplitudes, every phase configuration yields `|ψ_i|² = 1/n`, so the normalized entropy is always 1 and `coherence_score` is always 0. Tracked in [#5](https://github.com/sparkainlp-x/oes32-hls/issues/5).
+- `examples/kuramoto_oes32_bridge.py`: fixed on `main` (unreleased). `coherence_score` used the entropy of `|ψ_i|²`, which is uniform for unit amplitudes, so it was always 0 ([#5](https://github.com/sparkainlp-x/oes32-hls/issues/5)). It now uses the entropy of the phase histogram, and a regression test covers it.
 
 ## Relationship to ADR-001
 

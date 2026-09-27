@@ -18,7 +18,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Compile Testbench
         run: |
@@ -28,6 +28,28 @@ jobs:
 
       - name: Run Testbench
         run: ./test_oes32_hls
+
+  # ------------------------------------------------------------------
+  # Python example tests (SYNTHETIC): examples/kuramoto_oes32_bridge.py
+  # ------------------------------------------------------------------
+  python-example:
+    name: Python example tests (SYNTHETIC)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: python -m pip install numpy pytest
+      - name: Run tests
+        run: python -m pytest -v tests
+      - name: Run example
+        run: python examples/kuramoto_oes32_bridge.py
 
   # ------------------------------------------------------------------
   # Job 2: PLACEHOLDER. Verifies that the HLS source and script files
@@ -46,7 +68,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify HLS Files
         run: |
