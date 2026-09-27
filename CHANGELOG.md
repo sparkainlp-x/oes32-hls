@@ -13,6 +13,9 @@ All notable changes to this project are documented here. The format follows
 - `tests/test_kuramoto_bridge.py` (pytest) and a CI job that runs it together with the example.
 
 ### Changed
+- `.zenodo.json` adds the `spark-ai-nlp` Zenodo community.
+- ADR-001: the "Engine/HLS aligned to A" bit is set to 1; removed the stale "PRs in flight" note.
+- `CREATION_RECORD.md` moved to `docs/CREATION_RECORD.md`.
 - CI actions bumped to `actions/checkout@v7` (Node 24).
 
 ## [0.1.1] - 2026-09-26
@@ -24,4 +27,4 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 - Profile A HLS prototype (coherence floor, EVEN/ODD symmetry, FOLD8) with a g++ testbench; synthesis UNRUN, latency < 20 ns is a TARGET.
-- Claim-hygiene pass: factual `CREATION_RECORD.md`, MIT license, TARGET/UNRUN tags, placeholder CI job labelled as such; README skeleton, `CITATION.cff`.
+- Claim-hygiene pass: factual [`docs/CREATION_RECORD.md`](docs/CREATION_RECORD.md), MIT license, TARGET/UNRUN tags, placeholder CI job labelled as such; README skeleton, `CITATION.cff`.
