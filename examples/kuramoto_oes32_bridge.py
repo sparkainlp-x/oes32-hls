@@ -14,7 +14,7 @@ physical coherence.
 
 Original work by Jean-François Brisson, Spark AI NLP (GitHub: sparkainlp-x)
 Created: 2026-08-29
-License: MIT
+License: AGPL-3.0-only
 
 Algorithms:
   - kuramoto_step: Phase synchronization update rule
@@ -280,4 +280,4 @@ if __name__ == "__main__":
     print()
     print("Author: Jean-François Brisson, Spark AI NLP")
     print("Copyright (c) 2026 Jean-François Brisson, Spark AI NLP")
-    print("License: MIT")
+    print("License: AGPL-3.0-only")
