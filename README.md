@@ -2,7 +2,7 @@
 
 Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-residual): a C++ High-Level Synthesis (HLS) research prototype of OES-32 telemetry-triage checks, with a `g++` testbench. FPGA synthesis is **UNRUN**.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![CI](https://github.com/sparkainlp-x/oes32-hls/actions/workflows/vitis-hls.yml/badge.svg)](https://github.com/sparkainlp-x/oes32-hls/actions/workflows/vitis-hls.yml)
 [![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](#what-it-is-not)
 [![FPGA synthesis: UNRUN](https://img.shields.io/badge/FPGA%20synthesis-UNRUN-lightgrey.svg)](#evidence-tags)
@@ -33,7 +33,7 @@ Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-resi
 | `examples/kuramoto_oes32_bridge.py` | SYNTHETIC classical Kuramoto-oscillator example (order parameter R and phase-histogram entropy) |
 | `tests/test_kuramoto_bridge.py` | pytest checks for the Python example (run in CI) |
 | `.github/workflows/vitis-hls.yml` | CI: testbench build + run; synthesis step is a placeholder (UNRUN) |
-| `LICENSE` | MIT License |
+| `LICENSE` | GNU AGPL-3.0-only license text (see also `COMMERCIAL-LICENSE.md`) |
 | `CITATION.cff` | Citation metadata |
 
 ## Prototype architecture
@@ -150,4 +150,10 @@ Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this 
 
 ## License
 
-[MIT](LICENSE). Copyright (c) 2026 Jean-François Brisson, Spark AI NLP.
+This software is available under the GNU Affero General Public License v3.0 only (AGPL-3.0-only); see [LICENSE](LICENSE).
+
+Organizations that want to use it in proprietary products or services without AGPL obligations can contact the author about a commercial license via https://sparkainlpx.xyz.
+
+Versions published before 2026-09-29 were released under the MIT License and remain available under those terms.
+
+Copyright (C) 2026 Jean-François Brisson, Spark AI NLP.
