@@ -22,7 +22,7 @@ identifiers:
     value: "10.5281/zenodo.22985526"
     description: "Version DOI for v0.1.1 (Zenodo)"
 version: "0.3.0"
-# date-released: set when v0.3.0 is released (YYYY-MM-DD)
+date-released: "2026-10-02"
 abstract: >-
   C++14 High-Level Synthesis research prototype of OES-32 telemetry-triage checks
   (coherence floor, EVEN/ODD symmetry, FOLD8 ring balance) with a portable g++

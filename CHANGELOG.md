@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-## [0.3.0] - UNRELEASED (date set at release)
+## [0.3.0] - 2026-10-02
 
 The kernel source `oes32_triage_stream.cpp/.h` is unchanged. Synthesis, II, timing and board results remain **UNRUN** for every kernel. All new test stimuli are **SYNTHETIC**.
 
@@ -28,7 +28,7 @@ The kernel source `oes32_triage_stream.cpp/.h` is unchanged. Synthesis, II, timi
 - Docs: README "Python bindings" section (install, example, API, test matrix); design note §8; `docs/THIRD_PARTY.md` entries for pybind11, scikit-build-core, NumPy, Hypothesis, pytest and the notebook dependencies.
 
 ### Changed
-- `CITATION.cff` / `.zenodo.json`: version 0.3.0 and new keywords. `date-released` is removed from `CITATION.cff` until the release date is set.
+- `CITATION.cff` / `.zenodo.json`: version 0.3.0 and new keywords. `date-released` set to 2026-10-02.
 - `.gitignore`: Python build artefacts, `.hypothesis/`, `.ipynb_checkpoints/`.
 
 ## [0.2.0] - 2026-10-02

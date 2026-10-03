@@ -15,7 +15,7 @@ Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-resi
 - A portable `g++` testbench (6 test cases, 8 checks) that runs in CI without any AMD/Xilinx tools.
 - A Vitis HLS script (`run_hls.tcl`) targeting the AMD Zynq UltraScale+ RFSoC **ZCU111** board as a **TARGET** for co-design exploration.
 - **New in 0.2.0:** a streaming AXI4-Stream telemetry-triage kernel (`oes32_triage_accelerator`) with an adaptive, clamped gain tau. It ships with a `g++` testbench that compares it against a double-precision golden model (**SYNTHETIC** stimuli, 19 checks). Synthesis **UNRUN**. See [Streaming triage kernel](#streaming-triage-kernel-oes32_triage_accelerator).
-- **New in 0.3.0 (unreleased):** Python bindings (`oes32_triage`, pybind11) that run the **real C++ kernel**, a bit-accurate pure-Python reference model (`oes32_triage_ref`), a pytest + Hypothesis suite that checks the two bit-for-bit, and an executable explainer notebook. See [Python bindings](#python-bindings-oes32_triage).
+- **New in 0.3.0:** Python bindings (`oes32_triage`, pybind11) that run the **real C++ kernel**, a bit-accurate pure-Python reference model (`oes32_triage_ref`), a pytest + Hypothesis suite that checks the two bit-for-bit, and an executable explainer notebook. See [Python bindings](#python-bindings-oes32_triage).
 
 ## What it is NOT
 
@@ -191,7 +191,7 @@ HLS synthesis (requires AMD Vitis HLS; **UNRUN**): `vitis_hls -f run_hls_triage.
 
 ## Python bindings (`oes32_triage`)
 
-**Status: 0.3.0, unreleased.** The `oes32_triage` extension compiles the **unchanged** kernel source `oes32_triage_stream.cpp` into a Python module with pybind11. It builds against the same pinned open-source `ap_*` headers and the testbench-only `hls_stream.h` shim as the g++ testbench. This is a **C-simulation of the HLS source**, not synthesised RTL: synthesis, co-simulation and hardware remain **UNRUN**. All test stimuli are **SYNTHETIC**.
+**Status: added in 0.3.0.** The `oes32_triage` extension compiles the **unchanged** kernel source `oes32_triage_stream.cpp` into a Python module with pybind11. It builds against the same pinned open-source `ap_*` headers and the testbench-only `hls_stream.h` shim as the g++ testbench. This is a **C-simulation of the HLS source**, not synthesised RTL: synthesis, co-simulation and hardware remain **UNRUN**. All test stimuli are **SYNTHETIC**.
 
 ### Install
 

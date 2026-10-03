@@ -1,6 +1,6 @@
 # Design note: `oes32_triage_accelerator` (streaming telemetry triage, v2)
 
-- **Status:** Added in 0.2.0; kernel source unchanged in 0.3.0. g++ testbench with **SYNTHETIC** stimuli passes (19/19 checks). 0.3.0 (unreleased) adds Python bindings around the same C++ source and a pytest + Hypothesis suite (§8). Vitis HLS synthesis, C/RTL co-simulation, timing, II, latency and resource use: **UNRUN**.
+- **Status:** Added in 0.2.0; kernel source unchanged in 0.3.0. g++ testbench with **SYNTHETIC** stimuli passes (19/19 checks). 0.3.0 adds Python bindings around the same C++ source and a pytest + Hypothesis suite (§8). Vitis HLS synthesis, C/RTL co-simulation, timing, II, latency and resource use: **UNRUN**.
 - **Files:** `oes32_triage_stream.h`, `oes32_triage_stream.cpp`, `test_oes32_triage.cpp`, `tb/include_shim/hls_stream.h`, `run_hls_triage.tcl`, `Makefile`. Since 0.3.0 also: `python/src/oes32_triage_module.cpp`, `python/oes32_triage/`, `python/oes32_triage_ref.py`, `tests/test_triage_*.py`, `notebooks/oes32_triage_explainer.ipynb`, `CMakeLists.txt`, `pyproject.toml`.
 - **Owner:** Jean-François Brisson / Spark AI NLP.
 - **Relationship to ADR-001:** none normative. This kernel is an adaptive packet router for telemetry triage; it does not compute or replace the OES-32 residual R defined in `oes32-residual`.
@@ -126,7 +126,7 @@ Testbench limits: the golden model sees the same quantised `data_t` samples as t
 
 ## 8. Python bindings and reference model
 
-Added in 0.3.0 (unreleased). The kernel source is not modified.
+Added in 0.3.0. The kernel source is not modified.
 
 **Build.** `CMakeLists.txt` and `pyproject.toml` (scikit-build-core + pybind11) compile `oes32_triage_stream.cpp` together with `python/src/oes32_triage_module.cpp` into `oes32_triage._core`. The build uses the pinned open-source `ap_*` headers and `tb/include_shim/hls_stream.h`, exactly as the g++ testbench does. CMake looks for the headers in this order:
 1. `OES32_AP_TYPES_DIR`;
