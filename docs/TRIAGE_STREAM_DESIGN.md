@@ -1,7 +1,7 @@
 # Design note: `oes32_triage_accelerator` (streaming telemetry triage, v2)
 
-- **Status:** Added in 0.2.0. g++ testbench with **SYNTHETIC** stimuli passes (19/19 checks). Vitis HLS synthesis, C/RTL co-simulation, timing, II, latency and resource use: **UNRUN**.
-- **Files:** `oes32_triage_stream.h`, `oes32_triage_stream.cpp`, `test_oes32_triage.cpp`, `tb/include_shim/hls_stream.h`, `run_hls_triage.tcl`, `Makefile`.
+- **Status:** Added in 0.2.0; kernel source unchanged in 0.3.0. g++ testbench with **SYNTHETIC** stimuli passes (19/19 checks). 0.3.0 (unreleased) adds Python bindings around the same C++ source and a pytest + Hypothesis suite (§8). Vitis HLS synthesis, C/RTL co-simulation, timing, II, latency and resource use: **UNRUN**.
+- **Files:** `oes32_triage_stream.h`, `oes32_triage_stream.cpp`, `test_oes32_triage.cpp`, `tb/include_shim/hls_stream.h`, `run_hls_triage.tcl`, `Makefile`. Since 0.3.0 also: `python/src/oes32_triage_module.cpp`, `python/oes32_triage/`, `python/oes32_triage_ref.py`, `tests/test_triage_*.py`, `notebooks/oes32_triage_explainer.ipynb`, `CMakeLists.txt`, `pyproject.toml`.
 - **Owner:** Jean-François Brisson / Spark AI NLP.
 - **Relationship to ADR-001:** none normative. This kernel is an adaptive packet router for telemetry triage; it does not compute or replace the OES-32 residual R defined in `oes32-residual`.
 
@@ -115,6 +115,7 @@ The v1 source is not in this repository. The left column lists the issues as the
 | What | Tag | Evidence |
 |---|---|---|
 | Fixed-point kernel vs double golden model, g++ | **SYNTHETIC** | `test_oes32_triage.cpp`; log `docs/evidence/triage_testbench_log.txt`; trace `docs/evidence/triage_tau_trace.csv`; CI job "Triage stream testbench" |
+| C++ kernel (pybind11) vs bit-accurate Python model, bit-exact; invariants; golden tolerance | **SYNTHETIC** (seeded + Hypothesis) | `tests/test_triage_*.py`; CI job "Python bindings + pytest" on Python 3.10–3.13 (§8) |
 | Vitis HLS C simulation / co-simulation | **UNRUN** | no Vitis run; the testbench uses a std::queue `hls_stream.h` shim |
 | Synthesis, II, latency, timing at 100 MHz, resources | **UNRUN** / **TARGET** | `run_hls_triage.tcl` never executed |
 | Board (ZCU111) | **UNRUN** | – |
@@ -122,3 +123,41 @@ The v1 source is not in this repository. The left column lists the issues as the
 Stimuli (seed 20261002, 32-bit LCG): first-call init on an empty stream; ±ramps 0→±1.9; noise |x| ≤ 0.2 with spikes of +1.8, −1.8, +1.99 and −2.0; a 32-packet shock-only burst; `reset_tau` held for two calls; a `tau_max` clamp (s = 6 > tau_max = 3); a `tau_min` clamp (repeated ±1.9 at thr = 0.5); and relaxation after spikes. In total: 1402 packets and 1411 calls.
 
 Testbench limits: the golden model sees the same quantised `data_t` samples as the kernel (it checks the algorithm, not input quantisation). The smallest golden decision margin `|w − thr|` was 2.0e-3. Routing near an exact tie could differ between fixed point and double, and that case is not stressed. Running the testbench under UBSan reports shift-of-negative-value diagnostics inside the third-party `ap_private.h`. None of them come from this repository's code, and ASan is clean.
+
+## 8. Python bindings and reference model
+
+Added in 0.3.0 (unreleased). The kernel source is not modified.
+
+**Build.** `CMakeLists.txt` and `pyproject.toml` (scikit-build-core + pybind11) compile `oes32_triage_stream.cpp` together with `python/src/oes32_triage_module.cpp` into `oes32_triage._core`. The build uses the pinned open-source `ap_*` headers and `tb/include_shim/hls_stream.h`, exactly as the g++ testbench does. CMake looks for the headers in this order:
+1. `OES32_AP_TYPES_DIR`;
+2. the Makefile's `.deps/`;
+3. a download of the pinned commit tarball, verified against a recorded SHA-256 (`4b9af967…7092`).
+
+The result is a C-simulation of the HLS source. It is not RTL, and none of the UNRUN tags change.
+
+**Function-static state.** `adaptive_tau` and `init` are function-static, as in any HLS top function. One process (one loaded copy of the extension) therefore holds exactly one kernel state. The bindings do not hide this. They build per-object state on top of it using only the kernel's own register interface:
+
+1. A fresh `TriageKernel` issues its first call with `reset_tau = 1`. The init path and the reset path execute the same statement (`adaptive_tau = clamp(tau_sensitivity, tau_min, tau_max)`), and the static initial value `tau = 1` is overwritten before it can be observed. So this is behaviourally identical to the kernel's first-ever call in a new process.
+2. Each object saves `tau_out` (raw bits) after every call. If another object used the kernel since, it first makes one extra call on an empty input stream with `reset_tau = 1`, `tau_sensitivity = saved tau`, `tau_min = −8`, `tau_max = 8 − 2⁻¹⁴`. The clamp is a no-op, so tau is restored bit-exactly. Because the input is empty, `read_nb` fails and no packet is consumed or emitted. The binding checks the restored value and raises if it differs.
+3. Calls hold the GIL, so access to the static state is serialised. `kernel_invocations()` reports every real kernel call, including restore calls. A test checks the exact count for an interleaved run.
+
+This relies on one property of the kernel: tau and the init flag are its only state, and `reset_tau` can load any representable tau. A future kernel with more state (counters, for example) would need the same treatment for each extra variable, or an explicit state port.
+
+**Reference model.** `python/oes32_triage_ref.py` (`FixedTriage`, `FloatTriage`, `q_from_float`, `requant`) was moved verbatim from the explainer notebook. It models each `ap_fixed` assignment with raw integers: round-half-up (`AP_RND`) and saturation (`AP_SAT`), with `>> 4` as an arithmetic (flooring) shift in `acc_t`. A known limitation, deliberately left unchanged: `q_from_float` overflows (`x·2^F → inf`) for |x| ≳ 1e303.
+
+**What the tests establish** (all stimuli SYNTHETIC):
+- *Bit-exactness:* C++ and `FixedTriage` agree on routing and raw `tau_t` bits for every call. This holds on seeded scenarios, on the 1411 recorded g++ testbench calls, and on Hypothesis-generated streams with random and mid-stream-changing registers, empty calls, resets, saturating samples, and `tau_min > tau_max`. The C++ and Python quantisers agree on arbitrary finite floats and on exact half-LSB ties.
+- *Invariants (C++ only):*
+  - tau stays in `[tau_min, tau_max]`, or equals `tau_max` when `tau_min > tau_max`;
+  - exactly one output per packet, none for an empty call;
+  - the payload is forwarded unchanged;
+  - the residual path never raises tau, and a shock-only packet keeps it;
+  - the primary path moves tau monotonically toward `clamp(tau_sensitivity)` without overshoot;
+  - a reset reloads the clamped sensitivity;
+  - `−2.0` and a saturating `+2.0` are handled correctly;
+  - sign symmetry holds for every representable `x ≠ −2.0`.
+- *Golden:* routing matches exactly and tau is within 16 LSB on seeded scenarios. Random stimuli are not compared with the golden model, because near an exact tie the double and fixed-point models may legitimately route differently.
+
+Hypothesis uses a derandomised `ci` profile in CI (200 examples × 13 properties). The `thorough` profile (10 000 × 13) passed locally on Python 3.13. As a sanity check that the bit-exact tests actually detect errors, two deliberate one-line mutations of the reference model were each caught: truncating instead of rounding in `requant` failed 5 tests, and dropping the shock-only excess clamp failed 4. These mutations are not part of the repository.
+
+**Speed (indicative only, build box):** `TriageKernel.run` processes about 3 × 10⁶ calls/s, about 15× the per-call Python reference model. This is a host CPU C-simulation figure. It says nothing about FPGA throughput, which is UNRUN.

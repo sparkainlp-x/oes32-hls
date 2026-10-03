@@ -1,0 +1,45 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "oes32-triage"
+version = "0.3.0"
+description = "Python bindings (pybind11) for the OES-32 streaming triage HLS kernel, plus a bit-accurate Python reference model. C-simulation only; FPGA synthesis UNRUN."
+readme = "README.md"
+license = { text = "AGPL-3.0-only" }
+authors = [{ name = "Jean-François Brisson", email = "sparkainlp-x@users.noreply.github.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = ["numpy>=1.23"]
+keywords = ["OES-32", "HLS", "fixed-point", "ap_fixed", "pybind11", "telemetry triage"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Programming Language :: C++",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "hypothesis>=6.100"]
+notebook = ["matplotlib>=3.7", "nbclient>=0.9", "nbformat>=5.9", "ipykernel>=6"]
+
+[project.urls]
+Homepage = "https://github.com/sparkainlp-x/oes32-hls"
+DOI = "https://doi.org/10.5281/zenodo.22985525"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+wheel.packages = ["python/oes32_triage"]
+wheel.license-files = ["LICENSE", "COMMERCIAL-LICENSE.md", "docs/THIRD_PARTY.md"]
+build-dir = "build/py/{wheel_tag}"
+sdist.include = ["oes32_triage_stream.cpp", "oes32_triage_stream.h", "tb/include_shim/hls_stream.h"]
+sdist.exclude = [".deps", "build", "notebooks", ".github"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

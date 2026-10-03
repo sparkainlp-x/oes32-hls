@@ -6,6 +6,31 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - UNRELEASED (date set at release)
+
+The kernel source `oes32_triage_stream.cpp/.h` is unchanged. Synthesis, II, timing and board results remain **UNRUN** for every kernel. All new test stimuli are **SYNTHETIC**.
+
+### Added
+- **Python bindings** `oes32_triage` (pybind11 + scikit-build-core; `pyproject.toml`, `CMakeLists.txt`, `python/src/oes32_triage_module.cpp`). They compile the **unchanged** C++ kernel with the pinned `ap_*` headers (downloaded and SHA-256 verified, or reused from `.deps/`) and the testbench-only `hls_stream` shim.
+  - `TriageKernel` provides `step`, `step_raw`, `step_detail`, a vectorised `run` (per-call register arrays, empty-call mask), `reset`, and `tau` / `tau_raw`.
+  - Also exposed: the C++ quantisers `quantize_data/tau/thr` and `kernel_invocations()`.
+  - Function-static kernel state is handled explicitly. A fresh object's first call uses `reset_tau`. When another object ran in between, the saved tau is restored bit-exactly through one empty-stream `reset_tau` call. One process holds one kernel state, and this is documented.
+- **Reference model** `python/oes32_triage_ref.py` (`FixedTriage`, `FloatTriage`), moved verbatim from the explainer notebook with no behaviour change.
+- **pytest + Hypothesis suite** (`tests/test_triage_reference.py`, `test_triage_bitexact.py`, `test_triage_invariants.py`, `test_triage_golden.py`; 36 tests, 13 Hypothesis properties):
+  - C++ vs reference bit-exactness on routing and raw tau bits;
+  - replay of `docs/evidence/triage_tau_trace.csv` with zero mismatches;
+  - invariants (bounds, `tau_min > tau_max`, one output per packet, payload unchanged, shock-only keeps tau, monotone relaxation without overshoot, reset, ±2.0, sign symmetry);
+  - golden tolerance (16 LSB).
+  - Hypothesis uses a derandomised `ci` profile, plus `dev` and `thorough` profiles.
+- **Notebook** `notebooks/oes32_triage_explainer.ipynb` (SYNTHETIC; the membrane framing is a metaphor only). It imports the reference module, adds an optional cross-check against the compiled C++ kernel, and is re-executed. `scripts/check_notebook.py` runs it in CI.
+- **CI:** a "Python bindings + pytest" job on Python 3.10–3.13 and a "Notebook execution check" job. The Python example job now also runs the reference-model replay tests.
+- `Makefile` targets `py-install`, `py-test`, `notebook`.
+- Docs: README "Python bindings" section (install, example, API, test matrix); design note §8; `docs/THIRD_PARTY.md` entries for pybind11, scikit-build-core, NumPy, Hypothesis, pytest and the notebook dependencies.
+
+### Changed
+- `CITATION.cff` / `.zenodo.json`: version 0.3.0 and new keywords. `date-released` is removed from `CITATION.cff` until the release date is set.
+- `.gitignore`: Python build artefacts, `.hypothesis/`, `.ipynb_checkpoints/`.
+
 ## [0.2.0] - 2026-10-02
 
 Synthesis, II, timing and board results remain **UNRUN** for every kernel.

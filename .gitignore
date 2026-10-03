@@ -85,3 +85,11 @@ oes32_triage_proj/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Python packaging / extension build
+dist/
+*.egg-info/
+python/oes32_triage/_core*.so
+python/oes32_triage/_core*.pyd
+.hypothesis/
+.ipynb_checkpoints/

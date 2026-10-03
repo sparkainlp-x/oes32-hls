@@ -76,9 +76,62 @@ jobs:
       - name: Install
         run: python -m pip install numpy pytest
       - name: Run tests
-        run: python -m pytest -v tests
+        # The extension-based triage tests run in the python-bindings job.
+        run: python -m pytest -v tests/test_kuramoto_bridge.py tests/test_triage_reference.py
       - name: Run example
         run: python examples/kuramoto_oes32_bridge.py
+
+  # ------------------------------------------------------------------
+  # Python bindings: build the pybind11 extension (real C++ kernel,
+  # oes32_triage_stream.cpp unchanged; pinned ap_* headers fetched and
+  # SHA-256 verified by CMake) and run the full pytest suite, including
+  # Hypothesis property tests (derandomised "ci" profile). C-simulation
+  # only; SYNTHETIC stimuli; not synthesis.
+  # ------------------------------------------------------------------
+  python-bindings:
+    name: Python bindings + pytest (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build & install extension
+        run: python -m pip install -v ".[test]"
+      - name: Run pytest (extension required)
+        env:
+          OES32_REQUIRE_EXT: "1"
+          HYPOTHESIS_PROFILE: ci
+        run: python -m pytest -v -p no:cacheprovider --hypothesis-show-statistics tests
+
+  # ------------------------------------------------------------------
+  # Explainer notebook must execute top to bottom without errors
+  # (uses the reference module and the compiled extension).
+  # ------------------------------------------------------------------
+  notebook:
+    name: Notebook execution check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: python -m pip install ".[notebook]"
+      - name: Execute notebook
+        run: python scripts/check_notebook.py notebooks/oes32_triage_explainer.ipynb
 
   # ------------------------------------------------------------------
   # Job 2: PLACEHOLDER. Verifies that the HLS source and script files

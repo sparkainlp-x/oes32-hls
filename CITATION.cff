@@ -21,8 +21,8 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22985526"
     description: "Version DOI for v0.1.1 (Zenodo)"
-version: "0.2.0"
-date-released: "2026-10-02"
+version: "0.3.0"
+# date-released: set when v0.3.0 is released (YYYY-MM-DD)
 abstract: >-
   C++14 High-Level Synthesis research prototype of OES-32 telemetry-triage checks
   (coherence floor, EVEN/ODD symmetry, FOLD8 ring balance) with a portable g++
@@ -30,7 +30,10 @@ abstract: >-
   (ADR-001). Version 0.2.0 adds a streaming AXI4-Stream triage kernel
   (oes32_triage_accelerator) with an adaptive, clamped fixed-point gain, verified
   only by a g++ testbench against a double-precision golden model on SYNTHETIC
-  stimuli. AMD ZCU111 is a TARGET; FPGA synthesis, timing and board runs are UNRUN.
+  stimuli. Version 0.3.0 adds pybind11 Python bindings that run the unchanged C++
+  kernel, a bit-accurate Python reference model, and a pytest/Hypothesis suite
+  checking the two bit-for-bit (C-simulation only). AMD ZCU111 is a TARGET; FPGA
+  synthesis, timing and board runs are UNRUN.
 keywords:
   - oes32
   - hls
@@ -43,3 +46,7 @@ keywords:
   - streaming
   - adaptive-threshold
   - telemetry-triage
+  - pybind11
+  - python
+  - property-based-testing
+  - bit-accurate-model

@@ -4,6 +4,9 @@
 #   make test            # both testbenches
 #   make test-membrane   # test_oes32_hls (AXI4-Lite membrane checks)
 #   make test-triage     # test_oes32_triage (streaming triage kernel)
+#   make py-install      # build + install the oes32_triage Python extension
+#   make py-test         # pytest suite (needs the extension; see README)
+#   make notebook        # execute notebooks/oes32_triage_explainer.ipynb
 #   make clean
 #
 # The triage kernel needs ap_int.h / ap_fixed.h. They are fetched from
@@ -31,7 +34,7 @@ TRIAGE_CSV := $(BUILD)/triage_tau_trace.csv
 TRIAGE_INC   := -isystem $(AP_TYPES_DIR)/include -isystem tb/include_shim -I.
 TRIAGE_FLAGS := -Wno-uninitialized -Wno-maybe-uninitialized
 
-.PHONY: all test test-membrane test-triage deps clean distclean
+.PHONY: all test test-membrane test-triage deps clean distclean py-install py-test notebook
 
 all: test
 
@@ -58,6 +61,18 @@ test-membrane: $(BUILD)/test_oes32_hls
 
 test-triage: $(BUILD)/test_oes32_triage
 	./$(BUILD)/test_oes32_triage $(TRIAGE_CSV)
+
+# --- Python bindings (pybind11; real C++ kernel) --------------------------
+PYTHON ?= python3
+
+py-install: deps
+	$(PYTHON) -m pip install -v ".[test]"
+
+py-test:
+	OES32_REQUIRE_EXT=1 $(PYTHON) -m pytest -v tests
+
+notebook:
+	$(PYTHON) scripts/check_notebook.py notebooks/oes32_triage_explainer.ipynb
 
 clean:
 	rm -rf $(BUILD)
