@@ -305,7 +305,7 @@ Related repositories:
 
 ## Citation
 
-Archived on Zenodo: concept DOI [10.5281/zenodo.22985525](https://doi.org/10.5281/zenodo.22985525) (all versions; resolves to the latest). Version DOIs: v0.2.0 (streaming triage kernel) is [10.5281/zenodo.23113675](https://doi.org/10.5281/zenodo.23113675); v0.1.1 is [10.5281/zenodo.22985526](https://doi.org/10.5281/zenodo.22985526).
+Archived on Zenodo: concept DOI [10.5281/zenodo.22985525](https://doi.org/10.5281/zenodo.22985525) (all versions; resolves to the latest). Version DOIs: v0.3.0 (Python bindings + bit-exact test suite) is [10.5281/zenodo.23114188](https://doi.org/10.5281/zenodo.23114188); v0.2.0 (streaming triage kernel) is [10.5281/zenodo.23113675](https://doi.org/10.5281/zenodo.23113675); v0.1.1 is [10.5281/zenodo.22985526](https://doi.org/10.5281/zenodo.22985526).
 
 Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this repository" button.
 
