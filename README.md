@@ -230,7 +230,7 @@ Related repositories:
 
 ## Citation
 
-Archived on Zenodo: concept DOI [10.5281/zenodo.22985525](https://doi.org/10.5281/zenodo.22985525) (all versions; resolves to the latest). The v0.1.1 archive is [10.5281/zenodo.22985526](https://doi.org/10.5281/zenodo.22985526). Version 0.2.0 (streaming triage kernel) gets its own version DOI only when a GitHub release is published. Until then it has none.
+Archived on Zenodo: concept DOI [10.5281/zenodo.22985525](https://doi.org/10.5281/zenodo.22985525) (all versions; resolves to the latest). Version DOIs: v0.2.0 (streaming triage kernel) is [10.5281/zenodo.23113675](https://doi.org/10.5281/zenodo.23113675); v0.1.1 is [10.5281/zenodo.22985526](https://doi.org/10.5281/zenodo.22985526).
 
 Citation metadata is in [CITATION.cff](CITATION.cff); GitHub shows a "Cite this repository" button.
 
