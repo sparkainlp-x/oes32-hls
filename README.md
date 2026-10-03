@@ -2,6 +2,8 @@
 
 Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-residual): a C++ High-Level Synthesis (HLS) research prototype of OES-32 telemetry-triage checks, with a `g++` testbench. FPGA synthesis is **UNRUN**.
 
+**In plain English:** C++ code written for an FPGA that checks 32-value telemetry vectors and routes streamed packets to a "nominal" or "residual" output. So far it is tested in software only. **Quick start** (any C++14 compiler, no AMD/Xilinx tools): `g++ -std=c++14 -o test_oes32_hls test_oes32_hls.cpp oes32_hls_top.cpp && ./test_oes32_hls`; see [Quickstart](#quickstart) and [Python bindings](#python-bindings-oes32_triage).
+
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![CI](https://github.com/sparkainlp-x/oes32-hls/actions/workflows/vitis-hls.yml/badge.svg)](https://github.com/sparkainlp-x/oes32-hls/actions/workflows/vitis-hls.yml)
 [![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](#what-it-is-not)
