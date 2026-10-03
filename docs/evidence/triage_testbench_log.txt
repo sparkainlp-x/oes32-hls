@@ -1,0 +1,43 @@
+# SYNTHETIC — g++ testbench log for oes32_triage_accelerator (synthesis UNRUN)
+# Date: 2026-10-02 22:31 EDT  Host: Linux x86_64  Compiler: g++ (Debian 14.2.0-19) 14.2.0
+# Command: make distclean && make test-triage
+
+g++ -std=c++14 -O2 -Wall -Wextra -Wno-unknown-pragmas -Wno-uninitialized -Wno-maybe-uninitialized -isystem .deps/HLS_arbitrary_Precision_Types-200a9aecaadf471592558540dc5a88256cbf880f/include -isystem tb/include_shim -I. -o build/test_oes32_triage test_oes32_triage.cpp oes32_triage_stream.cpp
+./build/test_oes32_triage build/triage_tau_trace.csv
+OES-32 triage stream testbench (SYNTHETIC stimuli, g++; synthesis UNRUN)
+tau_t LSB = 2^-14 = 6.104e-05; tau tolerance = 16 LSB = 9.766e-04
+
+SC1  first call, empty stream (init loads tau_sensitivity):
+  PASS  tau_out == tau_sensitivity on first call
+  PASS  no packet emitted on empty call
+SC2  positive and negative ramps 0 -> +/-1.9 (200 samples each):
+  PASS  both ramps reach the residual path  (residual: pos=95 neg=95 of 200)
+SC3  seeded noise (|x|<=0.2) with +/- spikes every 25 samples:
+  PASS  every spike routed to residual  (16/16 spikes residual, 8/8 negative)
+  PASS  negative spikes trigger residual (incl. -2.0 saturating min)
+SC4  shock-only burst (32 small samples, is_shock=1):
+  PASS  all shock-only packets routed to residual
+  PASS  tau does not rise during shock-only burst  (tau before=0.811951 after=0.811951)
+  PASS  tau below tau_sensitivity before burst (burst is meaningful)
+SC5  reset_tau reloads tau_sensitivity (level, held 2 calls):
+  PASS  tau was pulled away from tau_sensitivity
+  PASS  reset_tau=1 (empty call) -> tau_out == tau_sensitivity  (before=0.649963 after=1.000000)
+  PASS  reset_tau=1 with packet -> tau stays at tau_sensitivity
+SC6  tau_max clamp (tau_sensitivity=6.0 > tau_max=3.0):
+  PASS  reload is clamped to tau_max
+  PASS  relaxation toward 6.0 is held at tau_max for 50 packets
+SC7  tau_min clamp (repeated 1.9 spikes, thr=0.5, tau_min=0.5):
+  PASS  tau reaches and holds tau_min  (reached at packet 8, final tau=0.500000)
+SC8  relaxation back to tau_sensitivity after spikes:
+  PASS  tau returns to within 8 LSB of tau_sensitivity (rounding dead zone bounded)  (final tau=0.999573, |tau - sens|=4.27e-04, limit 8 LSB=4.88e-04)
+
+GLOBAL  per-packet comparison against golden model:
+  PASS  routing matches golden exactly for every packet  (1402 packets: 946 primary, 456 residual; mismatches=0)
+  PASS  tau within 16-LSB tolerance of golden after every call  (max |err| = 4.272e-04, 0 steps out of tolerance)
+  PASS  tau within [tau_min, tau_max] after every call  (0 violations)
+  PASS  packets forwarded unchanged, exactly one output each  (0 mismatches)
+  INFO  min golden decision margin |w - thr| (non-shock) = 2.002e-03
+  INFO  tau trace written to build/triage_tau_trace.csv (1411 rows)
+
+Results: 19 / 19 checks passed
+# exit status: 0

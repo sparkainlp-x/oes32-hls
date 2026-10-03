@@ -30,6 +30,35 @@ jobs:
         run: ./test_oes32_hls
 
   # ------------------------------------------------------------------
+  # Streaming triage kernel (oes32_triage_accelerator): g++ testbench vs
+  # a double-precision golden model, SYNTHETIC seeded stimuli. `make`
+  # fetches the Apache-2.0 ap_int/ap_fixed headers at a pinned commit;
+  # hls_stream.h is a testbench-only shim (tb/include_shim). No Xilinx
+  # tools; this is NOT synthesis or C/RTL co-simulation.
+  # ------------------------------------------------------------------
+  triage-testbench:
+    name: Triage stream testbench (g++, SYNTHETIC)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Build & run triage testbench
+        run: |
+          g++ --version | head -n1
+          make test-triage
+
+      - name: Upload tau trace (SYNTHETIC)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: triage-tau-trace-synthetic
+          path: build/triage_tau_trace.csv
+          if-no-files-found: warn
+
+  # ------------------------------------------------------------------
   # Python example tests (SYNTHETIC): examples/kuramoto_oes32_bridge.py
   # ------------------------------------------------------------------
   python-example:
@@ -63,7 +92,7 @@ jobs:
   hls-synthesis:
     name: HLS synthesis (UNRUN — placeholder echo)
     runs-on: ubuntu-latest
-    needs: testbench
+    needs: [testbench, triage-testbench]
     permissions:
       contents: read
     steps:
@@ -74,6 +103,7 @@ jobs:
         run: |
           echo "Checking OES-32 HLS source and automation scripts..."
           ls -la oes32_hls_top.h oes32_hls_top.cpp run_hls.tcl
+          ls -la oes32_triage_stream.h oes32_triage_stream.cpp run_hls_triage.tcl
 
       - name: Placeholder - echo synthesis command (UNRUN)
         # To enable full hardware synthesis, use an AMD Vitis environment
@@ -81,5 +111,7 @@ jobs:
         run: |
           echo "TARGET architecture: AMD Xilinx Zynq UltraScale+ RFSoC (ZCU111)"
           echo "Synthesis command (NOT executed): vitis_hls -f run_hls.tcl"
+          echo "Synthesis command (NOT executed): vitis_hls -f run_hls_triage.tcl"
           # vitis_hls -f run_hls.tcl
+          # vitis_hls -f run_hls_triage.tcl
           echo "Synthesis status: UNRUN (placeholder step; no synthesis was performed)."

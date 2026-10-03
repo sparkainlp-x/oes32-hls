@@ -18,16 +18,25 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22985526"
     description: "Version DOI for v0.1.1 (Zenodo)"
-version: "0.1.1"
-date-released: "2026-09-26"
+version: "0.2.0"
+date-released: "2026-10-02"
 abstract: >-
   C++14 High-Level Synthesis research prototype of OES-32 telemetry-triage checks
   (coherence floor, EVEN/ODD symmetry, FOLD8 ring balance) with a portable g++
   testbench. Profile A sidecar to the normative residual in oes32-residual
-  (ADR-001). AMD ZCU111 is a TARGET; FPGA synthesis and board runs are UNRUN.
+  (ADR-001). Version 0.2.0 adds a streaming AXI4-Stream triage kernel
+  (oes32_triage_accelerator) with an adaptive, clamped fixed-point gain, verified
+  only by a g++ testbench against a double-precision golden model on SYNTHETIC
+  stimuli. AMD ZCU111 is a TARGET; FPGA synthesis, timing and board runs are UNRUN.
 keywords:
   - oes32
   - hls
   - vitis-hls
   - fpga
   - cpp
+  - axi4-stream
+  - fixed-point
+  - ap-fixed
+  - streaming
+  - adaptive-threshold
+  - telemetry-triage
