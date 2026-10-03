@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Documentation
+- README: new "Related work" section linking multi-quantum-oes (concept DOI 10.5281/zenodo.23113851). Its Python `stream32` model follows the earlier v1 logic and differs from this kernel.
+- `.zenodo.json` (takes effect at the next release): adds the keywords "anomaly detection", "reproducible research" and "telemetry", and a `references` related identifier for the multi-quantum-oes concept DOI. Zenodo's relation vocabulary has no `isRelatedTo`.
+
 ## [0.3.0] - 2026-10-02
 
 The kernel source `oes32_triage_stream.cpp/.h` is unchanged. Synthesis, II, timing and board results remain **UNRUN** for every kernel. All new test stimuli are **SYNTHETIC**.

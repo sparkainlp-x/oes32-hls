@@ -30,7 +30,10 @@
     "pybind11",
     "Python",
     "property-based testing",
-    "bit-accurate model"
+    "bit-accurate model",
+    "anomaly detection",
+    "reproducible research",
+    "telemetry"
   ],
   "related_identifiers": [
     {
@@ -46,6 +49,12 @@
     {
       "identifier": "https://github.com/Xilinx/HLS_arbitrary_Precision_Types/tree/200a9aecaadf471592558540dc5a88256cbf880f",
       "relation": "requires",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.23113851",
+      "relation": "references",
+      "scheme": "doi",
       "resource_type": "software"
     }
   ],

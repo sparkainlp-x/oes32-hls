@@ -303,6 +303,16 @@ Related repositories:
 - [sparkainlp-x/oes32_engine](https://github.com/sparkainlp-x/oes32_engine): Profile A software sidecars (Python)
 - [sparkainlp-x/qldpc_decoder_cpp](https://github.com/sparkainlp-x/qldpc_decoder_cpp): C++/HLS qLDPC decoder scaffold (hardware path UNRUN)
 
+## Related work
+
+- **[multi-quantum-oes](https://github.com/sparkainlp-x/multi-quantum-oes)** ([concept DOI 10.5281/zenodo.23113851](https://doi.org/10.5281/zenodo.23113851)) is an offline Python OES replay-triage workbench (**SYNTHETIC** data only). Its `stream32` module is a float-level model of the **earlier v1** triage branch logic, not an approximation of the v2 `oes32_triage_accelerator` here. It differs from this kernel in four ways:
+  - its reset runs once and is unclamped;
+  - it uses the signed value instead of |value|;
+  - shock packets can raise tau;
+  - its gain constants differ (η = 0.05 and leak 0.95, not 1/16 steps).
+
+  This repository's kernel, with `python/oes32_triage_ref.py` as its bit-accurate model, is the reference implementation.
+
 ## Citation
 
 Archived on Zenodo: concept DOI [10.5281/zenodo.22985525](https://doi.org/10.5281/zenodo.22985525) (all versions; resolves to the latest). Version DOIs: v0.3.0 (Python bindings + bit-exact test suite) is [10.5281/zenodo.23114188](https://doi.org/10.5281/zenodo.23114188); v0.2.0 (streaming triage kernel) is [10.5281/zenodo.23113675](https://doi.org/10.5281/zenodo.23113675); v0.1.1 is [10.5281/zenodo.22985526](https://doi.org/10.5281/zenodo.22985526).
