@@ -5,6 +5,7 @@
 #   make test-membrane   # test_oes32_hls (AXI4-Lite membrane checks)
 #   make test-triage     # test_oes32_triage (streaming triage kernel)
 #   make test-edges      # tb/test_kernel_edges.cpp (edge cases, both kernels)
+#   make sanitize        # optional: all testbenches under ASan + UBSan
 #   make py-install      # build + install the oes32_triage Python extension
 #   make py-test         # pytest suite (needs the extension; see README)
 #   make notebook        # execute notebooks/oes32_triage_explainer.ipynb
@@ -37,7 +38,7 @@ TRIAGE_CSV := $(BUILD)/triage_tau_trace.csv
 TRIAGE_INC   := -isystem $(AP_TYPES_DIR)/include -isystem tb/include_shim -I.
 TRIAGE_FLAGS := -Wno-uninitialized -Wno-maybe-uninitialized
 
-.PHONY: all test test-membrane test-triage test-edges deps clean distclean py-install py-test notebook
+.PHONY: all test test-membrane test-triage test-edges sanitize deps clean distclean py-install py-test notebook
 
 all: test
 
@@ -67,6 +68,26 @@ $(BUILD)/test_kernel_edges: tb/test_kernel_edges.cpp oes32_hls_top.cpp oes32_hls
 
 test-edges: $(BUILD)/test_kernel_edges
 	./$(BUILD)/test_kernel_edges
+
+# --- Optional: AddressSanitizer + UndefinedBehaviorSanitizer -------------
+# Rebuilds the three testbenches in build/sanitize/ and runs them. Needs a
+# compiler with ASan/UBSan runtimes (GCC or Clang on Linux). Not part of
+# `make test`. Third-party ap_* headers are compiled too, so a report may
+# come from them rather than from this project's code. One such report
+# (shift-base in ap_private.h) is suppressed in tb/sanitize/ubsan.supp.
+SAN_FLAGS := -std=c++14 -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -Wno-unknown-pragmas
+SAN_DIR   := $(BUILD)/sanitize
+# halt_on_error makes any unsuppressed UBSan report fail the run.
+SAN_ENV   := UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1:suppressions=tb/sanitize/ubsan.supp ASAN_OPTIONS=detect_leaks=1
+
+sanitize: $(AP_TYPES_STAMP) | $(BUILD)
+	mkdir -p $(SAN_DIR)
+	$(CXX) $(SAN_FLAGS) -o $(SAN_DIR)/test_oes32_hls test_oes32_hls.cpp oes32_hls_top.cpp
+	$(CXX) $(SAN_FLAGS) $(TRIAGE_FLAGS) $(TRIAGE_INC) -o $(SAN_DIR)/test_oes32_triage test_oes32_triage.cpp oes32_triage_stream.cpp
+	$(CXX) $(SAN_FLAGS) $(TRIAGE_FLAGS) $(TRIAGE_INC) -o $(SAN_DIR)/test_kernel_edges tb/test_kernel_edges.cpp oes32_hls_top.cpp oes32_triage_stream.cpp
+	$(SAN_ENV) ./$(SAN_DIR)/test_oes32_hls
+	$(SAN_ENV) ./$(SAN_DIR)/test_oes32_triage $(SAN_DIR)/triage_tau_trace.csv
+	$(SAN_ENV) ./$(SAN_DIR)/test_kernel_edges
 
 test-membrane: $(BUILD)/test_oes32_hls
 	./$(BUILD)/test_oes32_hls

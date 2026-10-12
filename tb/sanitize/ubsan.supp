@@ -1,0 +1,5 @@
+# UBSan suppressions for `make sanitize`.
+# Third-party ap_private.h (Xilinx HLS_arbitrary_Precision_Types, pinned
+# commit) left-shifts negative values, which is undefined in C++14. This is
+# outside this repository's code; it is suppressed only for that file.
+shift-base:ap_private.h
