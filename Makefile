@@ -21,6 +21,8 @@ CXXFLAGS ?= -std=c++14 -O2 -Wall -Wextra -Wno-unknown-pragmas
 
 AP_TYPES_REPO := https://github.com/Xilinx/HLS_arbitrary_Precision_Types
 AP_TYPES_SHA  := 200a9aecaadf471592558540dc5a88256cbf880f
+# SHA-256 of $(AP_TYPES_REPO)/archive/$(AP_TYPES_SHA).tar.gz (same value as CMakeLists.txt)
+AP_TYPES_TGZ_SHA256 := 4b9af967feb55c5086f31d3545c914dd4c0de5026e5c8554f4450f4340727092
 AP_TYPES_DIR  := .deps/HLS_arbitrary_Precision_Types-$(AP_TYPES_SHA)
 AP_TYPES_STAMP := $(AP_TYPES_DIR)/include/ap_fixed.h
 
@@ -44,7 +46,10 @@ deps: $(AP_TYPES_STAMP)
 
 $(AP_TYPES_STAMP):
 	mkdir -p .deps
-	curl -fsSL $(AP_TYPES_REPO)/archive/$(AP_TYPES_SHA).tar.gz | tar -xz -C .deps
+	curl -fsSL -o .deps/ap_types.tar.gz $(AP_TYPES_REPO)/archive/$(AP_TYPES_SHA).tar.gz
+	echo "$(AP_TYPES_TGZ_SHA256)  .deps/ap_types.tar.gz" | sha256sum -c -
+	tar -xzf .deps/ap_types.tar.gz -C .deps
+	rm -f .deps/ap_types.tar.gz
 	test -f $@
 
 $(BUILD):
