@@ -11,6 +11,19 @@ Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-resi
 [![ADR-001: Profile A sidecar](https://img.shields.io/badge/ADR--001-Profile%20A%20sidecar-blue.svg)](#relationship-to-adr-001)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22985525.svg)](https://doi.org/10.5281/zenodo.22985525)
 
+## Status: software vs hardware
+
+| Layer | What exists | Status |
+|---|---|---|
+| C++ testbenches (`g++`): membrane checks, triage kernel vs golden model, edge cases | `make test` (8 + 19 + 37 checks) | Runs in CI; **SYNTHETIC** stimuli |
+| Sanitizer build of those testbenches (ASan + UBSan) | `make sanitize` | Runs in CI; **SYNTHETIC** stimuli |
+| Python bindings (pybind11 C-simulation of the unchanged kernel source), pytest + Hypothesis, notebook | `pip install ".[test]"`, `pytest` | Runs in CI; **SYNTHETIC** stimuli |
+| Vitis HLS C simulation / C/RTL co-simulation | `run_hls.tcl`, `run_hls_triage.tcl` | **UNRUN** |
+| Vitis HLS synthesis, II, latency, timing, resources | same scripts | **UNRUN**; figures are **TARGET** |
+| FPGA bitstream and board run (ZCU111) | none | **UNRUN** |
+
+Every passing check here is a software check. None of it is evidence of synthesis, timing or hardware behaviour.
+
 ## What it is
 
 - C++14 HLS source (`oes32_hls_top.cpp/.h`) implementing three checks on a 32-element vector: a coherence floor, EVEN/ODD symmetry, and FOLD8 ring balance, behind an AXI4-Lite interface declaration.
@@ -36,9 +49,11 @@ Profile A sidecar to [oes32-residual](https://github.com/sparkainlp-x/oes32-resi
 | `run_hls.tcl` | Vitis HLS automation script (project creation, synthesis, IP export). Not yet run |
 | `oes32_triage_stream.h` / `.cpp` | Streaming triage kernel `oes32_triage_accelerator` (AXI4-Stream + AXI4-Lite, `ap_fixed`) |
 | `test_oes32_triage.cpp` | g++ testbench: kernel vs double golden model, SYNTHETIC seeded stimuli, 19 checks, writes a tau CSV trace |
+| `tb/test_kernel_edges.cpp` | g++ edge-case testbench for both kernels (37 checks): tau boundaries, all-zero input, call independence, empty stream, stream ordering, reset, threshold tie, exact tau update, `data_t` rounding and saturation |
+| `tb/sanitize/ubsan.supp` | UBSan suppression for one third-party `ap_private.h` diagnostic, used by `make sanitize` |
 | `tb/include_shim/hls_stream.h` | **Testbench-only** std::queue stand-in for `hls::stream` (g++ only; `#error` under `__SYNTHESIS__`) |
 | `run_hls_triage.tcl` | Vitis HLS script for the triage kernel. Not yet run |
-| `Makefile` | `make test` builds and runs both testbenches; fetches pinned Apache-2.0 `ap_*` headers into `.deps/` |
+| `Makefile` | `make test` builds and runs all three testbenches; `make sanitize` reruns them under ASan + UBSan; fetches pinned Apache-2.0 `ap_*` headers into `.deps/` and checks the tarball's SHA-256 |
 | `docs/TRIAGE_STREAM_DESIGN.md` | Design note: algorithm, fixed-point choices, `read_nb`/`ap_ctrl_none` concern, v1→v2 fixes |
 | `docs/THIRD_PARTY.md` | Third-party components and licences |
 | `docs/evidence/` | Recorded testbench log and tau trace CSV (SYNTHETIC) |
@@ -197,7 +212,9 @@ HLS synthesis (requires AMD Vitis HLS; **UNRUN**): `vitis_hls -f run_hls_triage.
 
 ### Install
 
-Requirements: Python 3.10–3.13, a C++17 compiler, and network access on first build (CMake downloads the pinned header tarball and checks its SHA-256). If you already ran `make deps`, CMake reuses `.deps/`. You can also point `OES32_AP_TYPES_DIR` at a local copy.
+Requirements: Python 3.10–3.13 **with its development headers**, a C++17 compiler, CMake (scikit-build-core fetches it during the build if none is found), and network access on first build (CMake downloads the pinned header tarball and checks its SHA-256). If you already ran `make deps`, CMake reuses `.deps/`. You can also point `OES32_AP_TYPES_DIR` at a local copy.
+
+**Python development headers.** The build needs `Python.h` and the CPython development module. Distribution Pythons often ship without them; the build then stops with `Could NOT find Python (missing: ... Development.Module)`. Install them with `sudo apt install python3-dev` (Debian/Ubuntu; use the matching `python3.X-dev` for a non-default version) or `sudo dnf install python3-devel` (Fedora). Python builds from python.org, `actions/setup-python` and `uv python install` already include them.
 
 ```bash
 git clone https://github.com/sparkainlp-x/oes32-hls.git && cd oes32-hls
@@ -256,29 +273,32 @@ Hypothesis runs with a derandomised `ci` profile (200 examples per property, 13 
 
 ## Tests
 
-The testbench `test_oes32_hls.cpp` covers 6 test cases with 8 individual checks and exits non-zero if any check fails. `test_oes32_triage.cpp` covers the streaming kernel (8 scenarios, 19 checks). `make test` runs both. The Python suite (`tests/`, 41 tests: 36 triage + 5 Kuramoto) is described in [Python bindings](#python-bindings-oes32_triage).
+The testbench `test_oes32_hls.cpp` covers 6 test cases with 8 individual checks and exits non-zero if any check fails. `test_oes32_triage.cpp` covers the streaming kernel (8 scenarios, 19 checks). `tb/test_kernel_edges.cpp` adds edge cases for both kernels (37 checks). `make test` runs all three; `make sanitize` (optional) rebuilds and reruns them with AddressSanitizer and UndefinedBehaviorSanitizer. The edge-case testbench also prints, without failing, how the membrane kernel currently treats a NaN input: the coherence and FOLD8 flags still read 1 because every comparison with NaN is false. The Python suite (`tests/`, 41 tests: 36 triage + 5 Kuramoto) is described in [Python bindings](#python-bindings-oes32_triage).
 
 ### Continuous integration
 
 `.github/workflows/vitis-hls.yml` runs on every push and pull request to `main`:
 
 1. **Build & Run C++ Testbench:** builds with `g++` and runs it. The job fails if any check fails.
-2. **Triage stream testbench (g++, SYNTHETIC):** `make test-triage`, then uploads the tau CSV trace as an artifact. This is not synthesis or co-simulation.
+2. **Triage stream testbench (g++, SYNTHETIC):** `make test-triage` and `make test-edges`, then uploads the tau CSV trace as an artifact. This is not synthesis or co-simulation.
 3. **Python example tests (SYNTHETIC):** Kuramoto pytest, reference-model replay tests, and the Kuramoto example.
 4. **Python bindings + pytest (py3.10–3.13):** builds the pybind11 extension and runs the full pytest + Hypothesis suite.
 5. **Notebook execution check:** runs `notebooks/oes32_triage_explainer.ipynb` top to bottom.
-6. **HLS synthesis (UNRUN — placeholder echo):** confirms the HLS files for both kernels exist and **only echoes** the `vitis_hls` commands. It does **not** synthesize anything. A green result means "files present", not "synthesis passed".
+6. **Testbenches under ASan + UBSan:** `make sanitize`.
+7. **HLS source files present (synthesis NOT RUN):** confirms the HLS files for both kernels exist, writes a "NOT RUN" warning annotation and job summary, and lists the `vitis_hls` commands without running them. A green result means "files present", not "synthesis passed".
+8. **Vitis HLS synthesis (NOT RUN: needs AMD Vitis; disabled):** disabled with `if: false`, so it always shows as skipped. It needs a self-hosted runner with AMD Vitis.
 
 ## Evidence tags
 
 | Item | Tag | Notes |
 |---|---|---|
 | C++ testbench (`g++`) | **SYNTHETIC** inputs; runs in CI | 6 test cases, 8 checks; prints `Results: 8 / 8 tests passed` |
-| Vitis HLS synthesis | **UNRUN** | The CI synthesis job is a placeholder that only echoes the command |
+| Vitis HLS synthesis | **UNRUN** | The CI synthesis job is disabled (shows as skipped); a separate job only checks that the source files exist |
 | Latency < 20 ns | **TARGET** | Design intent, not measured; no synthesis report exists |
 | 100 MHz clock, II = 1 | **TARGET** | Set in `run_hls.tcl` / pragmas; not verified by a timing report |
 | Board deployment on ZCU111 | **UNRUN** | No bitstream, no board run |
 | Triage stream testbench (`g++`) | **SYNTHETIC** inputs; runs in CI | 19 checks vs double golden model; prints `Results: 19 / 19 checks passed` |
+| Edge-case testbench (`g++`), both kernels | **SYNTHETIC** inputs; runs in CI | prints `37/37 checks passed` |
 | Triage stream synthesis / II / timing | **UNRUN** | `run_hls_triage.tcl` never executed |
 | Python bindings / pytest (C++ vs reference, bit-exact) | **SYNTHETIC** stimuli; runs in CI | C-simulation of the HLS source via pybind11; not RTL |
 | Explainer notebook | **SYNTHETIC** | "Membrane" framing is a metaphor only; no physical claim |
