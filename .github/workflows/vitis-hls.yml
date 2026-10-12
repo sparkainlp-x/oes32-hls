@@ -49,6 +49,7 @@ jobs:
         run: |
           g++ --version | head -n1
           make test-triage
+          make test-edges
 
       - name: Upload tau trace (SYNTHETIC)
         if: always()
@@ -134,16 +135,27 @@ jobs:
         run: python scripts/check_notebook.py notebooks/oes32_triage_explainer.ipynb
 
   # ------------------------------------------------------------------
-  # Job 2: PLACEHOLDER. Verifies that the HLS source and script files
-  # are present and ECHOES the synthesis command. It does NOT run
-  # Vitis HLS; a green result means "files present", not "synthesis
-  # passed". Evidence tag for synthesis: UNRUN.
-  # To enable real synthesis, uncomment the vitis_hls line, move the
-  # job to a self-hosted runner with AMD Vitis installed, upload the
-  # report as an artifact, and rename this job.
+  # Optional sanitizer build of the project's own testbenches
+  # (ASan + UBSan, g++). Software-only; SYNTHETIC stimuli.
   # ------------------------------------------------------------------
-  hls-synthesis:
-    name: HLS synthesis (UNRUN — placeholder echo)
+  sanitize:
+    name: Testbenches under ASan + UBSan (g++, SYNTHETIC)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+      - name: Build & run with sanitizers
+        run: make sanitize
+
+  # ------------------------------------------------------------------
+  # HLS sources present: checks that the HLS source and Tcl script
+  # files exist and prints the synthesis commands WITHOUT running them.
+  # A green result here means "files present", never "synthesis passed".
+  # ------------------------------------------------------------------
+  hls-files-present:
+    name: "HLS source files present (synthesis NOT RUN)"
     runs-on: ubuntu-latest
     needs: [testbench, triage-testbench]
     permissions:
@@ -158,13 +170,39 @@ jobs:
           ls -la oes32_hls_top.h oes32_hls_top.cpp run_hls.tcl
           ls -la oes32_triage_stream.h oes32_triage_stream.cpp run_hls_triage.tcl
 
-      - name: Placeholder - echo synthesis command (UNRUN)
-        # To enable full hardware synthesis, use an AMD Vitis environment
-        # and uncomment the vitis_hls line below.
+      - name: Record that synthesis was NOT run
         run: |
-          echo "TARGET architecture: AMD Xilinx Zynq UltraScale+ RFSoC (ZCU111)"
-          echo "Synthesis command (NOT executed): vitis_hls -f run_hls.tcl"
-          echo "Synthesis command (NOT executed): vitis_hls -f run_hls_triage.tcl"
-          # vitis_hls -f run_hls.tcl
-          # vitis_hls -f run_hls_triage.tcl
-          echo "Synthesis status: UNRUN (placeholder step; no synthesis was performed)."
+          echo "::warning title=HLS synthesis NOT RUN::No Vitis HLS synthesis, C/RTL co-simulation, timing or hardware run was performed. Status: UNRUN."
+          {
+            echo "### HLS synthesis: NOT RUN (UNRUN)"
+            echo ""
+            echo "This job only checks that the HLS sources and Tcl scripts exist."
+            echo "No Vitis HLS synthesis, C/RTL co-simulation, timing, resource or board run was performed."
+            echo ""
+            echo "Commands that would run on a Vitis machine (not executed here):"
+            echo '- `vitis_hls -f run_hls.tcl`'
+            echo '- `vitis_hls -f run_hls_triage.tcl`'
+            echo ""
+            echo "TARGET architecture: AMD Xilinx Zynq UltraScale+ RFSoC (ZCU111)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------------------
+  # Vitis HLS synthesis: deliberately DISABLED (`if: false`), so it
+  # shows as skipped, not as a green check. Enabling it needs a
+  # self-hosted runner with AMD Vitis installed; upload the synthesis
+  # reports as artifacts before changing any evidence label.
+  # ------------------------------------------------------------------
+  hls-synthesis:
+    name: "Vitis HLS synthesis (NOT RUN: needs AMD Vitis; disabled)"
+    if: false
+    runs-on: ubuntu-latest
+    needs: [hls-files-present]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+      - name: Synthesis (requires AMD Vitis HLS)
+        run: |
+          vitis_hls -f run_hls.tcl
+          vitis_hls -f run_hls_triage.tcl
