@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+Kernel sources are unchanged. Synthesis, co-simulation, timing and board runs remain **UNRUN**. New test stimuli are **SYNTHETIC**.
+
+### Tests
+- `tb/test_kernel_edges.cpp` (`make test-edges`, part of `make test`): 37 edge-case checks for both kernels: tau boundaries, all-zero input, call independence, empty stream, stream ordering, reset, threshold tie, exact tau update, `data_t` rounding and saturation. It also reports (without failing) that a NaN input currently leaves the membrane coherence and FOLD8 flags at 1.
+- `make sanitize`: optional ASan + UBSan build of all three testbenches; one third-party `ap_private.h` shift diagnostic is suppressed in `tb/sanitize/ubsan.supp`. Added as a CI job.
+
+### Build and CI
+- `Makefile`: the `ap_*` header tarball is now checked against its SHA-256 (the value `CMakeLists.txt` already used) before unpacking.
+- CI: the placeholder synthesis job is renamed "HLS source files present (synthesis NOT RUN)" and writes a NOT RUN warning and job summary; a separate "Vitis HLS synthesis" job is disabled (`if: false`) so it shows as skipped instead of passing.
+
+### Documentation
+- README: software-vs-hardware status table at the top; Python development-header prerequisite for the bindings.
+- `REVIEW_GUIDE.md` for reviewers.
+
 ### Documentation
 - README: new "Related work" section linking multi-quantum-oes (concept DOI 10.5281/zenodo.23113851). Its Python `stream32` model follows the earlier v1 logic and differs from this kernel.
 - `.zenodo.json` (takes effect at the next release): adds the keywords "anomaly detection", "reproducible research" and "telemetry", and a `references` related identifier for the multi-quantum-oes concept DOI. Zenodo's relation vocabulary has no `isRelatedTo`.
