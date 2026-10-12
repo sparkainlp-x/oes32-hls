@@ -1,9 +1,10 @@
 # =====================================================================
 # OES-32 HLS — g++ testbench build (no AMD/Xilinx tools required)
 #
-#   make test            # both testbenches
+#   make test            # all three testbenches
 #   make test-membrane   # test_oes32_hls (AXI4-Lite membrane checks)
 #   make test-triage     # test_oes32_triage (streaming triage kernel)
+#   make test-edges      # tb/test_kernel_edges.cpp (edge cases, both kernels)
 #   make py-install      # build + install the oes32_triage Python extension
 #   make py-test         # pytest suite (needs the extension; see README)
 #   make notebook        # execute notebooks/oes32_triage_explainer.ipynb
@@ -36,11 +37,11 @@ TRIAGE_CSV := $(BUILD)/triage_tau_trace.csv
 TRIAGE_INC   := -isystem $(AP_TYPES_DIR)/include -isystem tb/include_shim -I.
 TRIAGE_FLAGS := -Wno-uninitialized -Wno-maybe-uninitialized
 
-.PHONY: all test test-membrane test-triage deps clean distclean py-install py-test notebook
+.PHONY: all test test-membrane test-triage test-edges deps clean distclean py-install py-test notebook
 
 all: test
 
-test: test-membrane test-triage
+test: test-membrane test-triage test-edges
 
 deps: $(AP_TYPES_STAMP)
 
@@ -60,6 +61,12 @@ $(BUILD)/test_oes32_hls: test_oes32_hls.cpp oes32_hls_top.cpp oes32_hls_top.h | 
 
 $(BUILD)/test_oes32_triage: test_oes32_triage.cpp oes32_triage_stream.cpp oes32_triage_stream.h tb/include_shim/hls_stream.h $(AP_TYPES_STAMP) | $(BUILD)
 	$(CXX) $(CXXFLAGS) $(TRIAGE_FLAGS) $(TRIAGE_INC) -o $@ test_oes32_triage.cpp oes32_triage_stream.cpp
+
+$(BUILD)/test_kernel_edges: tb/test_kernel_edges.cpp oes32_hls_top.cpp oes32_hls_top.h oes32_triage_stream.cpp oes32_triage_stream.h tb/include_shim/hls_stream.h $(AP_TYPES_STAMP) | $(BUILD)
+	$(CXX) $(CXXFLAGS) $(TRIAGE_FLAGS) $(TRIAGE_INC) -o $@ tb/test_kernel_edges.cpp oes32_hls_top.cpp oes32_triage_stream.cpp
+
+test-edges: $(BUILD)/test_kernel_edges
+	./$(BUILD)/test_kernel_edges
 
 test-membrane: $(BUILD)/test_oes32_hls
 	./$(BUILD)/test_oes32_hls
