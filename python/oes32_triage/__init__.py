@@ -44,7 +44,7 @@ from ._core import (  # noqa: F401
     quantize_thr,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 ROUTE_NAMES = {ROUTE_NONE: None, ROUTE_PRIMARY: "primary", ROUTE_RESIDUAL: "residual"}
 

@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.3.1] - 2026-10-13
 
 Kernel sources are unchanged. Synthesis, co-simulation, timing and board runs remain **UNRUN**. New test stimuli are **SYNTHETIC**.
 
@@ -20,7 +20,7 @@ Kernel sources are unchanged. Synthesis, co-simulation, timing and board runs re
 - README: software-vs-hardware status table at the top; Python development-header prerequisite for the bindings.
 - `REVIEW_GUIDE.md` for reviewers.
 
-### Documentation
+### Related work
 - README: new "Related work" section linking multi-quantum-oes (concept DOI 10.5281/zenodo.23113851). Its Python `stream32` model follows the earlier v1 logic and differs from this kernel.
 - `.zenodo.json` (takes effect at the next release): adds the keywords "anomaly detection", "reproducible research" and "telemetry", and a `references` related identifier for the multi-quantum-oes concept DOI. Zenodo's relation vocabulary has no `isRelatedTo`.
 

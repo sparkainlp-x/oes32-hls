@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "oes32-triage"
-version = "0.3.0"
+version = "0.3.1"
 description = "Python bindings (pybind11) for the OES-32 streaming triage HLS kernel, plus a bit-accurate Python reference model. C-simulation only; FPGA synthesis UNRUN."
 readme = "README.md"
 license = { text = "AGPL-3.0-only" }
